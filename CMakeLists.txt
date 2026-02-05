@@ -34,7 +34,11 @@ target_link_options (paracl PRIVATE
 if(BUILD_TESTS)
     enable_testing()
 
-    add_executable (paracl_tests tests/unit/unit_tests.cpp)
+    add_executable (paracl_tests
+        tests/unit/test_main.cpp
+        tests/unit/test_errors.cpp
+    )
+
     target_include_directories (paracl_tests PRIVATE include)
     target_compile_options (paracl_tests PRIVATE ${COMMON_COMPILE_OPTIONS})
 
