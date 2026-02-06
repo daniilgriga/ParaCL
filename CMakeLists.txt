@@ -41,6 +41,7 @@ if(BUILD_TESTS)
     add_executable (paracl_tests
         tests/unit/test_main.cpp
         tests/unit/test_errors.cpp
+        tests/unit/test_context.cpp
     )
 
     target_include_directories (paracl_tests PRIVATE include)
