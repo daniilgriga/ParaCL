@@ -68,6 +68,7 @@ add_executable (paracl_syntax
 target_include_directories (paracl_syntax PRIVATE
     src/syntax
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${FLEX_INCLUDE_DIRS}
 )
 
 target_compile_options (paracl_syntax PRIVATE

@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build libgtest-dev bison flex
+          sudo apt-get install -y cmake ninja-build libgtest-dev bison flex libfl-dev
 
       - name: Configure
         run: cmake -S . -B build/ubuntu -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build libgtest-dev bison flex
+          sudo apt-get install -y cmake ninja-build libgtest-dev bison flex libfl-dev
 
       - name: Configure with sanitizers
         run: cmake -S . -B build/ubuntu-sanitize -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DSANITIZE=ON
