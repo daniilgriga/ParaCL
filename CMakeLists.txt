@@ -65,11 +65,20 @@ add_executable (paracl_syntax
     ${FLEX_ParaCLLexer_OUTPUTS}
 )
 
-target_include_directories (paracl_syntax PRIVATE
+set (PARACL_SYNTAX_INCLUDE_DIRS
     src/syntax
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${FLEX_INCLUDE_DIRS}
 )
+
+if(DEFINED FLEX_INCLUDE_DIRS AND NOT "${FLEX_INCLUDE_DIRS}" MATCHES "NOTFOUND")
+    list (APPEND PARACL_SYNTAX_INCLUDE_DIRS ${FLEX_INCLUDE_DIRS})
+endif()
+
+if(DEFINED FLEX_INCLUDE_DIR AND NOT "${FLEX_INCLUDE_DIR}" MATCHES "NOTFOUND")
+    list (APPEND PARACL_SYNTAX_INCLUDE_DIRS ${FLEX_INCLUDE_DIR})
+endif()
+
+target_include_directories (paracl_syntax PRIVATE ${PARACL_SYNTAX_INCLUDE_DIRS})
 
 target_compile_options (paracl_syntax PRIVATE
     ${COMMON_COMPILE_OPTIONS}
