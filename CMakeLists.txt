@@ -19,16 +19,20 @@ else()
     )
 endif()
 
+if(SANITIZE AND NOT MSVC)
+    set (SANITIZE_FLAGS -fsanitize=address,undefined)
+endif()
+
 add_executable (paracl src/main.cpp)
 target_include_directories (paracl PRIVATE include)
 
 target_compile_options (paracl PRIVATE
     ${COMMON_COMPILE_OPTIONS}
-    $<$<BOOL:${SANITIZE}>:-fsanitize=address,undefined>
+    ${SANITIZE_FLAGS}
 )
 
 target_link_options (paracl PRIVATE
-    $<$<BOOL:${SANITIZE}>:-fsanitize=address,undefined>
+    ${SANITIZE_FLAGS}
 )
 
 if(BUILD_TESTS)
@@ -40,7 +44,15 @@ if(BUILD_TESTS)
     )
 
     target_include_directories (paracl_tests PRIVATE include)
-    target_compile_options (paracl_tests PRIVATE ${COMMON_COMPILE_OPTIONS})
+
+    target_compile_options (paracl_tests PRIVATE
+        ${COMMON_COMPILE_OPTIONS}
+        ${SANITIZE_FLAGS}
+    )
+
+    target_link_options (paracl_tests PRIVATE
+        ${SANITIZE_FLAGS}
+    )
 
     find_package (GTest REQUIRED)
     target_link_libraries (paracl_tests PRIVATE GTest::gtest GTest::gtest_main)
