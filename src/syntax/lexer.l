@@ -1,7 +1,7 @@
 %option c++ noyywrap
 
 %{
-  #include "parser.tab.hh"
+    #include "parser.tab.hh"
 %}
 
 DIGIT  [0-9]
