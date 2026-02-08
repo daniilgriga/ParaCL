@@ -1,25 +1,29 @@
 %language "c++"
 %skeleton "lalr1.cc"
 %defines
+%locations
 %define api.value.type variant
 %param {yy::Driver* driver}
+%define parse.error verbose
 
 %code requires
 {
-    #include <string>
+  #include <string>
 
-    namespace yy { class Driver; }
+  namespace yy { class Driver; }
 }
 
 %code
 {
-    #include <iostream>
-    #include "driver.hpp"
+  #include <iostream>
+  #include "driver.hpp"
 
-    namespace yy
-    {
-        parser::token_type yylex (parser::semantic_type* yylval, Driver* driver);
-    }
+  namespace yy
+  {
+    parser::token_type yylex (parser::semantic_type* yylval,
+                              parser::location_type* yylloc,
+                              Driver* driver);
+  }
 }
 
 %token  ADD            "+"
@@ -62,52 +66,56 @@
 
 %%
 
-program
-    : stmt_list
-    ;
+program 
+  : stmt_list
+  ;
 
 stmt_list
-    : stmt_list stmt
-    | stmt
-    ;
+  : stmt_list stmt
+  | stmt
+  ;
 
 stmt
-    : VAR ASSIGN expr SCOLON
-    | PRINT expr SCOLON
-    | expr SCOLON
-    ;
+  : VAR ASSIGN expr SCOLON
+  | PRINT expr SCOLON
+  | expr SCOLON
+  ;
 
 expr
-    : NUMBER                      { $$ = $1; }
-    | VAR                         { $$ = 0; }       // plug
-    | expr ADD expr               { $$ = $1 + $3; }
-    | expr SUB expr               { $$ = $1 - $3; }
-    | expr MUL expr               { $$ = $1 * $3; }
-    | expr DIV expr               { $$ = $1 / $3; }
-    | expr MOD expr               { $$ = $1 % $3; }
-    | LEFT_PAREN expr RIGHT_PAREN { $$ = $2; }
-    | equals                      { $$ = $1; }
-    ;
+  : NUMBER                      { $$ = $1; }
+  | VAR                         { $$ = 0; }       // plug
+  | expr ADD expr               { $$ = $1 + $3; }
+  | expr SUB expr               { $$ = $1 - $3; }
+  | expr MUL expr               { $$ = $1 * $3; }
+  | expr DIV expr               { $$ = $1 / $3; }
+  | expr MOD expr               { $$ = $1 % $3; }
+  | LEFT_PAREN expr RIGHT_PAREN { $$ = $2; }
+  | equals                      { $$ = $1; }
+  ;
 
 equals
-    : expr EQ expr            { $$ = $1 == $3; }
-    | expr NEQ expr           { $$ = $1 != $3; }
-    | expr LESS expr          { $$ = $1 < $3;  }
-    | expr GREATER expr       { $$ = $1 > $3;  }
-    | expr LESS_OR_EQ expr    { $$ = $1 <= $3; }
-    | expr GREATER_OR_EQ expr { $$ = $1 >= $3; }
-    ;
+  : expr EQ expr            { $$ = $1 == $3; }
+  | expr NEQ expr           { $$ = $1 != $3; }
+  | expr LESS expr          { $$ = $1 < $3;  }
+  | expr GREATER expr       { $$ = $1 > $3;  }
+  | expr LESS_OR_EQ expr    { $$ = $1 <= $3; }
+  | expr GREATER_OR_EQ expr { $$ = $1 >= $3; }
+  ;
 
 %%
 
 namespace yy
 {
-
-    parser::token_type yylex (parser::semantic_type* yylval, Driver* driver)
+    parser::token_type yylex (parser::semantic_type* yylval,
+                             parser::location_type* yylloc,
+                             Driver* driver)
     {
-        return driver->yylex (yylval);
+        return driver->yylex(yylval, yylloc);
     }
 
-    void parser::error (const std::string&) {}
+    void parser::error (const location_type& yyloc, const std::string& msg)
+    {
+        driver->error(yyloc, msg);
+    }
 
-} // namespace yy
+}  // namespace yy

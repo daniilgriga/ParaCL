@@ -9,8 +9,9 @@ namespace paracl
 
     struct SourceLocation
     {
-        int line = 0;
-        int column = 0;
+        std::string file;
+        int line = 1;
+        int column = 1;
     };
 
     inline std::string format_location (SourceLocation loc)
@@ -18,11 +19,14 @@ namespace paracl
         if (loc.line <= 0)
             return "";
 
-        if (loc.column <= 0)
-            return " (" + std::to_string (loc.line) + ")";
+        std::string file_prefix = loc.file.empty() ? "" : (loc.file + ":");
 
-        return " (" + std::to_string (loc.line) + ":" + std::to_string (loc.column) + ")";
+        if (loc.column <= 0)
+            return " (" + file_prefix + std::to_string(loc.line) + ")";
+
+        return " (" + file_prefix + std::to_string(loc.line) + ":" + std::to_string(loc.column) + ")";
     }
+
 
     class ParaCLError : public std::runtime_error
     {
