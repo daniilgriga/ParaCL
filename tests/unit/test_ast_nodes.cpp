@@ -124,6 +124,56 @@ TEST (BinaryExprTest, Addition)
     EXPECT_EQ (add.eval (ctx), 10);
 }
 
+TEST (BinaryExprTest, Subtraction)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* lhs = arena.make_expr<paracl::IntLiteral> (13);
+    auto* rhs = arena.make_expr<paracl::IntLiteral> (3);
+
+    paracl::BinaryExpr sub (paracl::BinOp::Sub, lhs, rhs);
+
+    EXPECT_EQ (sub.eval (ctx), 10);
+}
+
+TEST (BinaryExprTest, Multiplication)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* lhs = arena.make_expr<paracl::IntLiteral> (4);
+    auto* rhs = arena.make_expr<paracl::IntLiteral> (5);
+
+    paracl::BinaryExpr mul (paracl::BinOp::Mul, lhs, rhs);
+
+    EXPECT_EQ (mul.eval (ctx), 20);
+}
+
+TEST (BinaryExprTest, NestedExpression)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    // (2 + 3) * 12 / 4 = 15
+    TestArena arena;
+    auto* two = arena.make_expr<paracl::IntLiteral> (2);
+    auto* three = arena.make_expr<paracl::IntLiteral> (3);
+    auto* sum = arena.make_expr<paracl::BinaryExpr> (paracl::BinOp::Add, two, three);
+    auto* twelve = arena.make_expr<paracl::IntLiteral> (12);
+    auto* four = arena.make_expr<paracl::IntLiteral> (4);
+    auto* div = arena.make_expr<paracl::BinaryExpr> (paracl::BinOp::Div, twelve, four);
+
+    paracl::BinaryExpr mul (paracl::BinOp::Mul, sum, div);
+
+    EXPECT_EQ (mul.eval (ctx), 15);
+}
+
 TEST (BinaryExprTest, DivisionByZeroThrows)
 {
     std::istringstream in;
