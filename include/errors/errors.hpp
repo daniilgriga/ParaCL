@@ -9,9 +9,9 @@ namespace paracl
 
     struct SourceLocation
     {
-        std::string file;
         int line = 1;
         int column = 1;
+        std::string file = "";
     };
 
     inline std::string format_location (SourceLocation loc)
@@ -53,7 +53,7 @@ namespace paracl
     {
     public:
         explicit SyntaxError (std::string_view msg)
-            : ParaCLError (make_error_message (ErrorType::Syntax, {}, msg)) {}
+            : ParaCLError (make_error_message (ErrorType::Syntax, {0, 0}, msg)) {}
 
         SyntaxError (SourceLocation loc, std::string_view msg)
             : ParaCLError (make_error_message (ErrorType::Syntax, loc, msg)) {}
@@ -63,7 +63,7 @@ namespace paracl
     {
     public:
         explicit RuntimeError (std::string_view msg)
-            : ParaCLError (make_error_message (ErrorType::Runtime, {}, msg)) {}
+            : ParaCLError (make_error_message (ErrorType::Runtime, {0, 0}, msg)) {}
 
         RuntimeError (SourceLocation loc, std::string_view msg)
             : ParaCLError (make_error_message (ErrorType::Runtime, loc, msg)) {}

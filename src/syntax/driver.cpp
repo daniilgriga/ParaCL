@@ -14,9 +14,9 @@ void yy::Driver::error (const yy::parser::location_type& loc, const std::string&
     
     const paracl::SourceLocation where
     {
-        file_name,
         loc.begin.line,
-        loc.begin.column
+        loc.begin.column,
+        file_name
     };
     
     std::cerr
