@@ -9,8 +9,9 @@ namespace paracl
 
     struct SourceLocation
     {
-        int line = 0;
-        int column = 0;
+        int line = 1;
+        int column = 1;
+        std::string file = "";
     };
 
     inline std::string format_location (SourceLocation loc)
@@ -18,11 +19,14 @@ namespace paracl
         if (loc.line <= 0)
             return "";
 
-        if (loc.column <= 0)
-            return " (" + std::to_string (loc.line) + ")";
+        std::string file_prefix = loc.file.empty() ? "" : (loc.file + ":");
 
-        return " (" + std::to_string (loc.line) + ":" + std::to_string (loc.column) + ")";
+        if (loc.column <= 0)
+            return " (" + file_prefix + std::to_string(loc.line) + ")";
+
+        return " (" + file_prefix + std::to_string(loc.line) + ":" + std::to_string(loc.column) + ")";
     }
+
 
     class ParaCLError : public std::runtime_error
     {
@@ -49,7 +53,7 @@ namespace paracl
     {
     public:
         explicit SyntaxError (std::string_view msg)
-            : ParaCLError (make_error_message (ErrorType::Syntax, {}, msg)) {}
+            : ParaCLError (make_error_message (ErrorType::Syntax, {0, 0}, msg)) {}
 
         SyntaxError (SourceLocation loc, std::string_view msg)
             : ParaCLError (make_error_message (ErrorType::Syntax, loc, msg)) {}
@@ -59,7 +63,7 @@ namespace paracl
     {
     public:
         explicit RuntimeError (std::string_view msg)
-            : ParaCLError (make_error_message (ErrorType::Runtime, {}, msg)) {}
+            : ParaCLError (make_error_message (ErrorType::Runtime, {0, 0}, msg)) {}
 
         RuntimeError (SourceLocation loc, std::string_view msg)
             : ParaCLError (make_error_message (ErrorType::Runtime, loc, msg)) {}

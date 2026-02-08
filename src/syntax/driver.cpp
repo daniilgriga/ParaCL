@@ -1,9 +1,28 @@
 #include <fstream>
 #include <iostream>
+#include <string>
 
 #include <FlexLexer.h>
 
 #include "driver.hpp"
+#include "errors/errors.hpp"
+
+void yy::Driver::error (const yy::parser::location_type& loc, const std::string& msg)
+{
+    const std::string file_name =
+        (loc.begin.filename != nullptr) ? *loc.begin.filename : source_name_;
+    
+    const paracl::SourceLocation where
+    {
+        loc.begin.line,
+        loc.begin.column,
+        file_name
+    };
+    
+    std::cerr
+        << paracl::make_error_message(paracl::ErrorType::Syntax, where, msg)
+        << "\n";
+}
 
 int main (int argc, char* argv[])
 {
@@ -21,10 +40,9 @@ int main (int argc, char* argv[])
     }
 
     yyFlexLexer lexer (&file);
-    yy::Driver driver (&lexer);
+    yy::Driver driver (&lexer, argv[1]);
     if (!driver.parse())
     {
-        std::cerr << "Parse failed" << std::endl;
         return 1;
     }
 

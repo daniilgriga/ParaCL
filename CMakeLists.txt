@@ -67,6 +67,7 @@ add_executable (paracl_syntax
 
 set (PARACL_SYNTAX_INCLUDE_DIRS
     src/syntax
+    include
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
