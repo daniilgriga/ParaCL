@@ -53,7 +53,7 @@ namespace paracl
     {
     public:
         explicit SyntaxError (std::string_view msg)
-            : ParaCLError (make_error_message (ErrorType::Syntax, {0, 0}, msg)) {}
+            : ParaCLError (make_error_message (ErrorType::Syntax, {}, msg)) {}
 
         SyntaxError (SourceLocation loc, std::string_view msg)
             : ParaCLError (make_error_message (ErrorType::Syntax, loc, msg)) {}
@@ -63,7 +63,7 @@ namespace paracl
     {
     public:
         explicit RuntimeError (std::string_view msg)
-            : ParaCLError (make_error_message (ErrorType::Runtime, {0, 0}, msg)) {}
+            : ParaCLError (make_error_message (ErrorType::Runtime, {}, msg)) {}
 
         RuntimeError (SourceLocation loc, std::string_view msg)
             : ParaCLError (make_error_message (ErrorType::Runtime, loc, msg)) {}
