@@ -11,7 +11,7 @@ namespace paracl
     {
         int line = 0;
         int column = 0;
-        std::string file = "";
+        std::string_view file = "";
     };
 
     inline std::string format_location (SourceLocation loc)
@@ -19,7 +19,7 @@ namespace paracl
         if (loc.line <= 0)
             return "";
 
-        std::string file_prefix = loc.file.empty() ? "" : (loc.file + ":");
+        std::string file_prefix = loc.file.empty() ? "" : (std::string(loc.file) + ":");
 
         if (loc.column <= 0)
             return " (" + file_prefix + std::to_string(loc.line) + ")";
