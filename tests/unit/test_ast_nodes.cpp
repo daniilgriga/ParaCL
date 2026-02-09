@@ -370,3 +370,172 @@ TEST (IntegrationTest, DivisionByZeroWithLocation)
         EXPECT_EQ (std::string (e.what()), "Runtime error (1:5): division by zero");
     }
 }
+
+// if (1) { print 89; }
+TEST (IfStmtTest, ConditionTrue)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* cond = arena.make_expr<paracl::IntLiteral> (1);
+    auto* val = arena.make_expr<paracl::IntLiteral> (89);
+    auto* then_branch = arena.make_stmt<paracl::PrintStmt> (val);
+
+    paracl::IfStmt if_stmt (cond, then_branch);
+    if_stmt.exec (ctx);
+
+    EXPECT_EQ (out.str(), "89\n");
+}
+
+// if (0)
+// { print 1; }
+// else
+// { print 2; }
+TEST (IfStmtTest, ConditionFalseWithElse)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* cond = arena.make_expr<paracl::IntLiteral> (0);
+    auto* then_val = arena.make_expr<paracl::IntLiteral> (1);
+    auto* else_val = arena.make_expr<paracl::IntLiteral> (2);
+    auto* then_branch = arena.make_stmt<paracl::PrintStmt> (then_val);
+    auto* else_branch = arena.make_stmt<paracl::PrintStmt> (else_val);
+
+    paracl::IfStmt if_stmt (cond, then_branch, else_branch);
+    if_stmt.exec (ctx);
+
+    EXPECT_EQ (out.str(), "2\n");
+}
+
+// if (0) { print 42; }
+TEST (IfStmtTest, ConditionFalseNoElse)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* cond = arena.make_expr<paracl::IntLiteral> (0);
+    auto* val = arena.make_expr<paracl::IntLiteral> (42);
+    auto* then_branch = arena.make_stmt<paracl::PrintStmt> (val);
+
+    paracl::IfStmt if_stmt (cond, then_branch);
+    if_stmt.exec (ctx);
+
+    EXPECT_EQ (out.str(), "");
+}
+
+// if (-5) { print 99; }
+TEST (IfStmtTest, NonZeroIsTruthy)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* cond = arena.make_expr<paracl::IntLiteral> (-5);
+    auto* val = arena.make_expr<paracl::IntLiteral> (99);
+    auto* then_branch = arena.make_stmt<paracl::PrintStmt> (val);
+
+    paracl::IfStmt if_stmt (cond, then_branch);
+    if_stmt.exec (ctx);
+
+    EXPECT_EQ (out.str(), "99\n");
+}
+
+// while (0) { print 89; }
+TEST (WhileStmtTest, ConditionFalseImmediately)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* cond = arena.make_expr<paracl::IntLiteral> (0);
+    auto* val = arena.make_expr<paracl::IntLiteral> (89);
+    auto* body = arena.make_stmt<paracl::PrintStmt> (val);
+
+    paracl::WhileStmt while_stmt (cond, body);
+    while_stmt.exec (ctx);
+
+    EXPECT_EQ (out.str(), "");
+}
+
+// x = 3;
+// while (x)
+// {
+//     print x;
+//     x = x - 1;
+// }
+// output: 3, 2, 1
+TEST (WhileStmtTest, CountDown)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+
+    // condition: x
+    auto* cond = arena.make_expr<paracl::VarRef> ("x");
+
+    // body: print x; x = x - 1;
+    auto* var_x = arena.make_expr<paracl::VarRef> ("x");
+    auto* one = arena.make_expr<paracl::IntLiteral> (1);
+    auto* x_minus_1 = arena.make_expr<paracl::BinaryExpr> (
+        paracl::BinOp::Sub, var_x, one);
+
+    auto* print_x = arena.make_stmt<paracl::PrintStmt> (
+        arena.make_expr<paracl::VarRef> ("x"));
+    auto* assign_x = arena.make_stmt<paracl::AssignStmt> ("x", x_minus_1);
+
+    auto* body = arena.make_stmt<paracl::BlockStmt> (
+        std::vector<const paracl::Stmt*>{print_x, assign_x});
+
+    // setup: x = 3
+    ctx.set_var ("x", 3);
+
+    paracl::WhileStmt while_stmt (cond, body);
+    while_stmt.exec (ctx);
+
+    EXPECT_EQ (out.str(), "3\n2\n1\n");
+    EXPECT_EQ (ctx.get_var ("x"), 0);
+}
+
+// if (3 > 2)
+// { x = 10; }
+// else
+// { x = 20; }
+// print x;
+TEST (IntegrationTest, IfWithComparison)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+
+    auto* three = arena.make_expr<paracl::IntLiteral> (3);
+    auto* two = arena.make_expr<paracl::IntLiteral> (2);
+    auto* cond = arena.make_expr<paracl::BinaryExpr> (
+        paracl::BinOp::Gt, three, two);
+
+    auto* ten = arena.make_expr<paracl::IntLiteral> (10);
+    auto* twenty = arena.make_expr<paracl::IntLiteral> (20);
+    auto* then_branch = arena.make_stmt<paracl::AssignStmt> ("x", ten);
+    auto* else_branch = arena.make_stmt<paracl::AssignStmt> ("x", twenty);
+
+    auto* if_stmt = arena.make_stmt<paracl::IfStmt> (cond, then_branch, else_branch);
+    auto* print_x = arena.make_stmt<paracl::PrintStmt> (
+        arena.make_expr<paracl::VarRef> ("x"));
+
+    paracl::BlockStmt program ({if_stmt, print_x});
+    program.exec (ctx);
+
+    EXPECT_EQ (out.str(), "10\n");
+}
