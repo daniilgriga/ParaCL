@@ -2,8 +2,6 @@
 #include <iostream>
 #include <string>
 
-#include <FlexLexer.h>
-
 #include "driver.hpp"
 #include "errors/errors.hpp"
 
@@ -37,7 +35,7 @@ int main (int argc, char* argv[])
         return 1;
     }
 
-    yyFlexLexer lexer (&file);
+    yy::Lexer lexer (&file);
     yy::Driver driver (&lexer, argv[1]);
 
     try
