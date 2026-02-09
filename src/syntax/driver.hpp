@@ -2,21 +2,18 @@
 
 #include <string>
 
-#include <FlexLexer.h>
-
 #include "parser.tab.hh"
+#include "syntax/lexer.hpp"
 
 namespace yy
 {
-    void set_location(parser::location_type* loc);
-
     class Driver
     {
-        FlexLexer *plex_;
+        Lexer* plex_;
         std::string source_name_;
 
     public:
-        explicit Driver (FlexLexer *plex, std::string source_name = "<stdin>")
+        explicit Driver (Lexer* plex, std::string source_name = "<stdin>")
             : plex_(plex), source_name_(source_name) {}
 
         parser::token_type yylex(parser::semantic_type *yylval,
@@ -28,7 +25,7 @@ namespace yy
                 yylloc->end.filename = &source_name_;
             }
 
-            set_location(yylloc);
+            plex_->set_context(yylval, yylloc);
 
             parser::token_type tt =
                 static_cast<parser::token_type>(plex_->yylex());
@@ -37,12 +34,12 @@ namespace yy
             {
             case parser::token_type::NUMBER:
             {
-                yylval->emplace<int>(std::stoi(plex_->YYText()));
+                yylval->emplace<int>(std::stoi(plex_->text()));
                 break;
             }
             case parser::token_type::VAR:
             {
-                yylval->emplace<std::string>(plex_->YYText());
+                yylval->emplace<std::string>(plex_->text());
                 break;
             }
             default:
