@@ -19,9 +19,7 @@ void yy::Driver::error (const yy::parser::location_type& loc, const std::string&
         file_name
     };
     
-    std::cerr
-        << paracl::make_error_message(paracl::ErrorType::Syntax, where, msg)
-        << "\n";
+    throw paracl::SyntaxError (where, msg);
 }
 
 int main (int argc, char* argv[])
@@ -41,8 +39,14 @@ int main (int argc, char* argv[])
 
     yyFlexLexer lexer (&file);
     yy::Driver driver (&lexer, argv[1]);
-    if (!driver.parse())
+
+    try
     {
+        driver.parse();
+    }
+    catch (const paracl::SyntaxError& e)
+    {
+        std::cerr << e.what() << std::endl;
         return 1;
     }
 
