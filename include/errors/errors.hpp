@@ -9,8 +9,8 @@ namespace paracl
 
     struct SourceLocation
     {
-        int line = 1;
-        int column = 1;
+        int line = 0;
+        int column = 0;
         std::string file = "";
     };
 
