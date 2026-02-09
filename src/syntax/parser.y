@@ -1,5 +1,4 @@
 %language "c++"
-%option "Lexer"
 %skeleton "lalr1.cc"
 %defines
 %locations
