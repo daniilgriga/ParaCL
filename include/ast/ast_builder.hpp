@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 #include <type_traits>
+#include <utility>
+#include <cassert>
 
 #include "ast/expr.hpp"
 #include "ast/stmt.hpp"
@@ -43,7 +45,11 @@ namespace paracl
             return raw;
         }
 
-        void set_root (const Stmt* root) { root_ = root; }
+        void set_root (const Stmt* root)
+        {
+            assert (root && "set_root: root must not be null");
+            root_ = root;
+        }
 
         const Stmt* root() const { return root_; }
     };
