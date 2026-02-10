@@ -35,18 +35,18 @@ namespace yy
 
             switch (tt)
             {
-            case parser::token_type::NUMBER:
-            {
-                yylval->emplace<int>(std::stoi(plex_->text()));
-                break;
-            }
-            case parser::token_type::VAR:
-            {
-                yylval->emplace<std::string>(plex_->text());
-                break;
-            }
-            default:
-                break;
+                case parser::token_type::NUMBER:
+                {
+                    yylval->emplace<int>(std::stoi(plex_->text()));
+                    break;
+                }
+                case parser::token_type::VAR:
+                {
+                    yylval->emplace<std::string>(plex_->text());
+                    break;
+                }
+                default:
+                    break;
             }
 
             return tt;
@@ -68,11 +68,13 @@ namespace yy
 
         const paracl::Stmt* root() const { return root_; }
 
-        bool parse()
+        void parse()
         {
-            parser parser(this);
-            return parser.parse() == 0;
+            root_ = nullptr;
+            parser parser_(this);
+            parser_.parse();
         }
+
     };
 
 } // namespace yy

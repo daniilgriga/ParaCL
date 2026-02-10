@@ -23,18 +23,6 @@ if(SANITIZE AND NOT MSVC)
     set (SANITIZE_FLAGS -fsanitize=address,undefined)
 endif()
 
-add_executable (paracl src/main.cpp)
-target_include_directories (paracl PRIVATE include)
-
-target_compile_options (paracl PRIVATE
-    ${COMMON_COMPILE_OPTIONS}
-    ${SANITIZE_FLAGS}
-)
-
-target_link_options (paracl PRIVATE
-    ${SANITIZE_FLAGS}
-)
-
 find_package (BISON REQUIRED)
 find_package (FLEX REQUIRED)
 
@@ -58,36 +46,37 @@ set_source_files_properties (
     COMPILE_OPTIONS "-Wno-error=unused-but-set-variable;-Wno-error=sign-compare"
 )
 
-add_executable (paracl_syntax
+add_executable (paracl
+    src/main.cpp
     src/syntax/driver.cpp
-    src/syntax/driver.hpp
     ${BISON_ParaCLParser_OUTPUTS}
     ${FLEX_ParaCLLexer_OUTPUTS}
+    ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.hh
 )
 
-set (PARACL_SYNTAX_INCLUDE_DIRS
+set (PARACL_INCLUDE_DIRS
     src/syntax
     include
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 if(DEFINED FLEX_INCLUDE_DIRS AND NOT "${FLEX_INCLUDE_DIRS}" MATCHES "NOTFOUND")
-    list (APPEND PARACL_SYNTAX_INCLUDE_DIRS ${FLEX_INCLUDE_DIRS})
+    list (APPEND PARACL_INCLUDE_DIRS ${FLEX_INCLUDE_DIRS})
 endif()
 
 if(DEFINED FLEX_INCLUDE_DIR AND NOT "${FLEX_INCLUDE_DIR}" MATCHES "NOTFOUND")
-    list (APPEND PARACL_SYNTAX_INCLUDE_DIRS ${FLEX_INCLUDE_DIR})
+    list (APPEND PARACL_INCLUDE_DIRS ${FLEX_INCLUDE_DIR})
 endif()
 
-target_include_directories (paracl_syntax PRIVATE ${PARACL_SYNTAX_INCLUDE_DIRS})
+target_include_directories (paracl PRIVATE ${PARACL_INCLUDE_DIRS})
 
-target_compile_options (paracl_syntax PRIVATE
+target_compile_options (paracl PRIVATE
     ${COMMON_COMPILE_OPTIONS}
-    $<$<BOOL:${SANITIZE}>:-fsanitize=address,undefined>
+    ${SANITIZE_FLAGS}
 )
 
-target_link_options (paracl_syntax PRIVATE
-    $<$<BOOL:${SANITIZE}>:-fsanitize=address,undefined>
+target_link_options (paracl PRIVATE
+    ${SANITIZE_FLAGS}
 )
 
 if(BUILD_TESTS)
