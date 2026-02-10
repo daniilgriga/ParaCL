@@ -54,12 +54,18 @@
 
 %token  <int>          NUMBER
 %token  <std::string>  VAR
-%nterm  <int>          equals
 %nterm  <int>          expr
+%nterm  <int>          cmp_expr
+%nterm  <int>          add_expr
+%nterm  <int>          mul_expr
+%nterm  <int>          unary_expr
+%nterm  <int>          primary
 
 %right ASSIGN
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
 %left ADD SUB
-%left MUL DIV
+%left MUL DIV MOD
 %nonassoc EQ NEQ LESS GREATER LESS_OR_EQ GREATER_OR_EQ
 
 %start program
@@ -72,34 +78,55 @@ program
 
 stmt_list
   : stmt_list stmt
-  | stmt
+  | %empty
   ;
 
 stmt
   : VAR ASSIGN expr SCOLON
   | PRINT expr SCOLON
   | expr SCOLON
+  | LEFT_BRACE stmt_list RIGHT_BRACE
+  | IF LEFT_PAREN expr RIGHT_PAREN stmt %prec LOWER_THAN_ELSE
+  | IF LEFT_PAREN expr RIGHT_PAREN stmt ELSE stmt
+  | WHILE LEFT_PAREN expr RIGHT_PAREN stmt
   ;
 
 expr
-  : NUMBER                      { $$ = $1; }
-  | VAR                         { $$ = 0; }       // plug
-  | expr ADD expr               { $$ = $1 + $3; }
-  | expr SUB expr               { $$ = $1 - $3; }
-  | expr MUL expr               { $$ = $1 * $3; }
-  | expr DIV expr               { $$ = $1 / $3; }
-  | expr MOD expr               { $$ = $1 % $3; }
-  | LEFT_PAREN expr RIGHT_PAREN { $$ = $2; }
-  | equals                      { $$ = $1; }
+  : cmp_expr                    { $$ = $1; }
   ;
 
-equals
-  : expr EQ expr            { $$ = $1 == $3; }
-  | expr NEQ expr           { $$ = $1 != $3; }
-  | expr LESS expr          { $$ = $1 < $3;  }
-  | expr GREATER expr       { $$ = $1 > $3;  }
-  | expr LESS_OR_EQ expr    { $$ = $1 <= $3; }
-  | expr GREATER_OR_EQ expr { $$ = $1 >= $3; }
+cmp_expr
+  : add_expr                        { $$ = $1; }
+  | add_expr EQ add_expr            { $$ = $1 == $3; }
+  | add_expr NEQ add_expr           { $$ = $1 != $3; }
+  | add_expr LESS add_expr          { $$ = $1 < $3; }
+  | add_expr GREATER add_expr       { $$ = $1 > $3; }
+  | add_expr LESS_OR_EQ add_expr    { $$ = $1 <= $3; }
+  | add_expr GREATER_OR_EQ add_expr { $$ = $1 >= $3; }
+  ;
+
+add_expr
+  : add_expr ADD mul_expr           { $$ = $1 + $3; }
+  | add_expr SUB mul_expr           { $$ = $1 - $3; }
+  | mul_expr                        { $$ = $1; }
+  ;
+
+mul_expr
+  : mul_expr MUL unary_expr         { $$ = $1 * $3; }
+  | mul_expr DIV unary_expr         { $$ = $1 / $3; }
+  | mul_expr MOD unary_expr         { $$ = $1 % $3; }
+  | unary_expr                      { $$ = $1; }
+  ;
+
+unary_expr
+  : SUB unary_expr                  { $$ = -$2; }
+  | primary                         { $$ = $1; }
+  ;
+
+primary
+  : NUMBER                          { $$ = $1; }
+  | VAR                             { $$ = 0; }       // plug
+  | LEFT_PAREN expr RIGHT_PAREN     { $$ = $2; }
   ;
 
 %%
