@@ -14,7 +14,6 @@ namespace yy
     class Lexer : public yyFlexLexer
     {
     private:
-        parser::semantic_type* yylval_ = nullptr;
         parser::location_type* yylloc_ = nullptr;
 
         void advance_location (const char* text)
@@ -40,9 +39,8 @@ namespace yy
     public:
         explicit Lexer(std::istream* in) : yyFlexLexer(in) {}
 
-        void set_context (parser::semantic_type* yylval, parser::location_type* yylloc)
+        void set_context (parser::location_type* yylloc)
         {
-            yylval_ = yylval;
             yylloc_ = yylloc;
         }
 
