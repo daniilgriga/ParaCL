@@ -14,7 +14,7 @@ git clone https://github.com/daniilgriga/ParaCL.git
 cd ParaCL/
 ```
 
-# How to Build
+## How to Build
 
 
 ```bash
@@ -27,9 +27,9 @@ cmake -S . -B build/release -G Ninja -DCMAKE_BUILD_TYPE=Release -DSANITIZE=OFF -
 cmake --build build/release
 ```
 
-# How to Run
+## How to Run
 
-## Input Format
+### Input Format
 
 The program accepts a source file as a command-line argument:
 
@@ -37,7 +37,7 @@ The program accepts a source file as a command-line argument:
 ./build/debug/paracl program.pcl
 ```
 
-## Language Features
+### Language Features
 
 - Arithmetic: `+`, `-`, `*`, `/`, `%`, unary `-`
 - Comparisons: `==`, `!=`, `<`, `>`, `<=`, `>=`
@@ -46,7 +46,7 @@ The program accepts a source file as a command-line argument:
 - Control flow: `if/else`, `while`
 - Blocks: `{ }`
 
-## Example Program
+### Example Program
 
 ```bash
 x = 10;
@@ -69,7 +69,7 @@ while (i < 5)
 }
 ```
 
-## Example Output
+### Example Output
 
 ```bash
 # with input y = 3:
@@ -81,23 +81,23 @@ while (i < 5)
 4
 ```
 
-# Unit-tests
+## Unit-tests
 
-## How to Build
+### How to Build
 
 ```bash
 cmake -S . -B build/tests -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
 cmake --build build/tests
 ```
 
-# How to Run
+### How to Run
 
 ```bash
 cd build/tests
 ctest --output-on-failure
 ```
 
-# End-to-end tests
+## End-to-end tests
 ```
 ./tests/e2e/run_e2e.sh ./build/debug/paracl
 ```
