@@ -1,6 +1,11 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
+
+#include "errors/errors.hpp"
+#include "interpreter/context.hpp"
+#include "syntax/driver.hpp"
+#include "syntax/lexer.hpp"
 
 int main (int argc, char* argv[])
 {
@@ -19,7 +24,33 @@ int main (int argc, char* argv[])
         return 1;
     }
 
-    std::cout << "This place for ParaCL interpreter..." << std::endl;
+    yy::Lexer lexer (&file);
+    yy::Driver driver (&lexer, filename);
+
+    try
+    {
+        driver.parse();
+
+        const paracl::Stmt* root = driver.builder().root();
+        if (!root)
+        {
+            std::cerr << "Error: no AST root" << std::endl;
+            return 1;
+        }
+
+        paracl::Context ctx (std::cin, std::cout);
+        root->exec (ctx);
+    }
+    catch (const paracl::ParaCLError& e)
+    {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }

@@ -1,0 +1,12 @@
+n = ?;
+a = 0;
+b = 1;
+
+while (n)
+{
+    print a;
+    t = a + b;
+    a = b;
+    b = t;
+    n = n - 1;
+}
