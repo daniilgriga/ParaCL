@@ -5,8 +5,10 @@
 %}
 
 DIGIT  [0-9]
+DIGIT1 [1-9]
 ID     [a-zA-Z_][a-zA-Z0-9_]*
 WS     [ \t\r\n]+
+LINE_COMMENT "//"[^\n]*
 
 %%
 
@@ -36,11 +38,14 @@ WS     [ \t\r\n]+
 "}"             { advance_location(yytext); return process_right_brace(); }
 "?"             { advance_location(yytext); return process_input(); }
 
-{DIGIT}+        { advance_location(yytext); return process_number(); }
+"0"             { advance_location(yytext); return process_number(); }
+{DIGIT1}{DIGIT}*    { advance_location(yytext); return process_number(); }
 {ID}            { advance_location(yytext); return process_var(); }
 
 {WS}            { advance_location(yytext); }
+{LINE_COMMENT}  { advance_location(yytext); }
 
+"0"{DIGIT}+     { advance_location(yytext); return process_yyerror(); }
 .               { advance_location(yytext); return process_yyerror(); }
 
 %%
