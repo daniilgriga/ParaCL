@@ -76,7 +76,7 @@ namespace paracl
         explicit BlockStmt (std::vector<const Stmt*> stmts, SourceLocation loc = {})
             : Stmt (loc), stmts_ (std::move (stmts))
         {
-            for (const auto* s : stmts_)
+            for ([[maybe_unused]] const auto* s : stmts_)
             {
                 assert (s && "BlockStmt: statement must not be null");
             }

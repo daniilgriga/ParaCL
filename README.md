@@ -93,11 +93,25 @@ cmake --build build/tests
 ### How to Run
 
 ```bash
-cd build/tests
-ctest --output-on-failure
+ctest --test-dir build/tests --output-on-failure
 ```
 
 ## End-to-end tests
 ```
 ./tests/e2e/run_e2e.sh ./build/debug/paracl
+```
+
+## Sample Programs With Input
+
+Programs for manual checks are in `tests/programs/`.
+
+Run with manual input from terminal:
+```bash
+# Debug version:
+./build/debug/paracl tests/programs/fibonacci.paracl
+./build/debug/paracl tests/programs/factorial.paracl
+
+# Release version:
+./build/release/paracl tests/programs/fibonacci.paracl
+./build/release/paracl tests/programs/factorial.paracl
 ```
