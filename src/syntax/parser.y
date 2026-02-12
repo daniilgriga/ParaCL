@@ -24,7 +24,7 @@
 
   #include "ast/expr_nodes.hpp"
   #include "ast/stmt_nodes.hpp"
-  #include "driver.hpp"
+  #include "syntax/driver.hpp"
 
   namespace yy
   {

@@ -88,9 +88,13 @@ if(BUILD_TESTS)
         tests/unit/test_context.cpp
         tests/unit/test_ast_nodes.cpp
         tests/unit/test_ast_builder.cpp
+        tests/unit/test_syntax.cpp
+        src/syntax/driver.cpp
+        ${BISON_ParaCLParser_OUTPUTS}
+        ${FLEX_ParaCLLexer_OUTPUTS}
     )
 
-    target_include_directories (paracl_tests PRIVATE include)
+    target_include_directories (paracl_tests PRIVATE ${PARACL_INCLUDE_DIRS})
 
     target_compile_options (paracl_tests PRIVATE
         ${COMMON_COMPILE_OPTIONS}
