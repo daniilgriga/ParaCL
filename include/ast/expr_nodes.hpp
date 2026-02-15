@@ -82,6 +82,29 @@ namespace paracl
         }
     };
 
+    class AssignExpr final : public Expr
+    {
+    private:
+        std::string name_;
+        const Expr* rhs_;
+
+    public:
+        AssignExpr (std::string name, const Expr* rhs, SourceLocation loc = {})
+            : Expr (loc), name_ (std::move (name)), rhs_ (rhs)
+        {
+            assert (rhs_ && "AssignExpr: rhs must not be null");
+        }
+
+        int eval (Context& ctx) const override
+        {
+            int value = rhs_->eval (ctx);
+            ctx.set_var (name_, value);
+
+            return value;
+        }
+    };
+
+
     class BinaryExpr final : public Expr
     {
     private:

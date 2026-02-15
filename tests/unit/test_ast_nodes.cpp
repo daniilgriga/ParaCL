@@ -304,6 +304,51 @@ TEST (BinaryExprTest, LogicalOrShortCircuit)
     });
 }
 
+// x = 42;  -> returns 42
+TEST (AssignExprTest, AssignsAndReturnsValue)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* val = arena.make_expr<paracl::IntLiteral> (42);
+
+    paracl::AssignExpr assign ("x", val);
+
+    EXPECT_EQ (assign.eval (ctx), 42);
+    EXPECT_EQ (ctx.get_var ("x"), 42);
+}
+
+// i = 2 + (j = 1 + (k = 1));
+// -> k = 1, j = 2, i = 4
+TEST (AssignExprTest, NestedAssignment)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* one = arena.make_expr<paracl::IntLiteral> (1);
+    auto* k_assign = arena.make_expr<paracl::AssignExpr> ("k", one);
+
+    auto* one2 = arena.make_expr<paracl::IntLiteral> (1);
+    auto* j_rhs = arena.make_expr<paracl::BinaryExpr> (
+        paracl::BinOp::Add, one2, k_assign);
+    auto* j_assign = arena.make_expr<paracl::AssignExpr> ("j", j_rhs);
+
+    auto* two = arena.make_expr<paracl::IntLiteral> (2);
+    auto* i_rhs = arena.make_expr<paracl::BinaryExpr> (
+        paracl::BinOp::Add, two, j_assign);
+
+    paracl::AssignExpr i_assign ("i", i_rhs);
+
+    EXPECT_EQ (i_assign.eval (ctx), 4);
+    EXPECT_EQ (ctx.get_var ("i"), 4);
+    EXPECT_EQ (ctx.get_var ("j"), 2);
+    EXPECT_EQ (ctx.get_var ("k"), 1);
+}
+
 TEST (AssignStmtTest, AssignsVariable)
 {
     std::istringstream in;
