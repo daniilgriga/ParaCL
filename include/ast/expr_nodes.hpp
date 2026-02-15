@@ -101,6 +101,13 @@ namespace paracl
         int eval (Context& ctx) const override
         {
             int left = lhs_->eval (ctx);
+
+            // short-circuit: don't evaluate rhs if result is already known
+            if (op_ == BinOp::And)
+                return left != 0 ? (rhs_->eval (ctx) != 0 ? 1 : 0) : 0;
+            if (op_ == BinOp::Or)
+                return left != 0 ? 1 : (rhs_->eval (ctx) != 0 ? 1 : 0);
+
             int right = rhs_->eval (ctx);
 
             switch (op_)
@@ -122,12 +129,13 @@ namespace paracl
                 case BinOp::Ge:  return left >= right ? 1 : 0;
                 case BinOp::Eq:  return left == right ? 1 : 0;
                 case BinOp::Ne:  return left != right ? 1 : 0;
-                case BinOp::And: return left != 0 && right != 0 ? 1 : 0;
-                case BinOp::Or:  return left != 0 || right != 0 ? 1 : 0;
                 case BinOp::Xor: return (left != 0) != (right != 0) ? 1 : 0;
+                case BinOp::And: // short-circuit
+                case BinOp::Or:  // short-circuit
+                    break;
             }
 
-            throw RuntimeError (loc(), "unknown binary operator"); // dead code for compiler
+            throw RuntimeError (loc(), "unknown binary operator");
         }
     };
 
