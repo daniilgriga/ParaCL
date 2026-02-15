@@ -59,7 +59,12 @@ namespace yy
         parser::token_type process_greater_or_eq() const { return yy::parser::token_type::GREATER_OR_EQ; }
         parser::token_type process_less() const { return yy::parser::token_type::LESS; }
         parser::token_type process_greater() const { return yy::parser::token_type::GREATER; }
-        
+
+        parser::token_type process_and() const { return yy::parser::token_type::AND; }
+        parser::token_type process_or() const { return yy::parser::token_type::OR; }
+        parser::token_type process_not() const { return yy::parser::token_type::NOT; }
+        parser::token_type process_xor() const { return yy::parser::token_type::XOR; }
+
         parser::token_type process_add() const { return yy::parser::token_type::ADD; }
         parser::token_type process_sub() const { return yy::parser::token_type::SUB; }
         parser::token_type process_mul() const { return yy::parser::token_type::MUL; }
