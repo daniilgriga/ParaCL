@@ -75,7 +75,7 @@ namespace paracl
                 case UnOp::Neg:
                     return -val;
                 case UnOp::Not:
-                    return val == 0 & 1 : 0;
+                    return val == 0 ? 1 : 0;
             }
 
             throw RuntimeError (loc(), "unknown unary operator"); // dead code for compiler
