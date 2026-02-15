@@ -125,12 +125,7 @@ stmt_list
   ;
 
 stmt
-  : VAR ASSIGN expr SCOLON
-    {
-      $$ = driver->builder().make_stmt<paracl::AssignStmt>(
-          std::move($1), $3, yy::make_loc(@$));
-    }
-  | PRINT expr SCOLON
+  : PRINT expr SCOLON
     {
       $$ = driver->builder().make_stmt<paracl::PrintStmt>(
           $2, yy::make_loc(@$));
@@ -163,7 +158,12 @@ stmt
   ;
 
 expr
-  : or_expr
+  : VAR ASSIGN expr
+    {
+      $$ = driver->builder().make_expr<paracl::AssignExpr>(
+          std::move($1), $3, yy::make_loc(@$));
+    }
+  | or_expr
     {
       $$ = $1;
     }
