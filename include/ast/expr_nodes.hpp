@@ -74,6 +74,8 @@ namespace paracl
             {
                 case UnOp::Neg:
                     return -val;
+                case UnOp::Not:
+                    return val == 0 & 1 : 0;
             }
 
             throw RuntimeError (loc(), "unknown unary operator"); // dead code for compiler
@@ -120,6 +122,9 @@ namespace paracl
                 case BinOp::Ge:  return left >= right ? 1 : 0;
                 case BinOp::Eq:  return left == right ? 1 : 0;
                 case BinOp::Ne:  return left != right ? 1 : 0;
+                case BinOp::And: return left != 0 && right != 0 ? 1 : 0;
+                case BinOp::Or:  return left != 0 || right != 0 ? 1 : 0;
+                case BinOp::Xor: return (left != 0) != (right != 0) ? 1 : 0;
             }
 
             throw RuntimeError (loc(), "unknown binary operator"); // dead code for compiler
