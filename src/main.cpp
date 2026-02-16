@@ -34,7 +34,8 @@ int main (int argc, char* argv[])
         const paracl::Stmt* root = driver.builder().root();
         if (!root)
         {
-            std::cerr << "Error: no AST root" << std::endl;
+            std::cerr << "Error: failed to parse '" << filename
+                      << "' — no program to execute" << std::endl;
             return 1;
         }
 

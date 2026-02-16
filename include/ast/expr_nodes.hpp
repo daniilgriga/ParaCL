@@ -74,11 +74,36 @@ namespace paracl
             {
                 case UnOp::Neg:
                     return -val;
+                case UnOp::Not:
+                    return val == 0 ? 1 : 0;
             }
 
             throw RuntimeError (loc(), "unknown unary operator"); // dead code for compiler
         }
     };
+
+    class AssignExpr final : public Expr
+    {
+    private:
+        std::string name_;
+        const Expr* rhs_;
+
+    public:
+        AssignExpr (std::string name, const Expr* rhs, SourceLocation loc = {})
+            : Expr (loc), name_ (std::move (name)), rhs_ (rhs)
+        {
+            assert (rhs_ && "AssignExpr: rhs must not be null");
+        }
+
+        int eval (Context& ctx) const override
+        {
+            int value = rhs_->eval (ctx);
+            ctx.set_var (name_, value);
+
+            return value;
+        }
+    };
+
 
     class BinaryExpr final : public Expr
     {
@@ -99,6 +124,13 @@ namespace paracl
         int eval (Context& ctx) const override
         {
             int left = lhs_->eval (ctx);
+
+            // short-circuit: don't evaluate rhs if result is already known
+            if (op_ == BinOp::And)
+                return left != 0 ? (rhs_->eval (ctx) != 0 ? 1 : 0) : 0;
+            if (op_ == BinOp::Or)
+                return left != 0 ? 1 : (rhs_->eval (ctx) != 0 ? 1 : 0);
+
             int right = rhs_->eval (ctx);
 
             switch (op_)
@@ -120,9 +152,13 @@ namespace paracl
                 case BinOp::Ge:  return left >= right ? 1 : 0;
                 case BinOp::Eq:  return left == right ? 1 : 0;
                 case BinOp::Ne:  return left != right ? 1 : 0;
+                case BinOp::Xor: return (left != 0) != (right != 0) ? 1 : 0;
+                case BinOp::And: // short-circuit
+                case BinOp::Or:  // short-circuit
+                    break;
             }
 
-            throw RuntimeError (loc(), "unknown binary operator"); // dead code for compiler
+            throw RuntimeError (loc(), "unknown binary operator");
         }
     };
 

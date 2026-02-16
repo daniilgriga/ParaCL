@@ -110,6 +110,23 @@ TEST (UnaryExprTest, Negation)
     EXPECT_EQ (neg.eval (ctx), -5);
 }
 
+TEST (UnaryExprTest, LogicalNot)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* zero = arena.make_expr<paracl::IntLiteral> (0);
+    auto* five = arena.make_expr<paracl::IntLiteral> (5);
+
+    paracl::UnaryExpr not_zero (paracl::UnOp::Not, zero);
+    paracl::UnaryExpr not_five (paracl::UnOp::Not, five);
+
+    EXPECT_EQ (not_zero.eval (ctx), 1);
+    EXPECT_EQ (not_five.eval (ctx), 0);
+}
+
 TEST (BinaryExprTest, Addition)
 {
     std::istringstream in;
@@ -220,6 +237,116 @@ TEST (BinaryExprTest, Comparison)
 
     paracl::BinaryExpr eq (paracl::BinOp::Eq, lhs, rhs);
     EXPECT_EQ (eq.eval (ctx), 0);
+}
+
+TEST (BinaryExprTest, LogicalAndOrXor)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* zero = arena.make_expr<paracl::IntLiteral> (0);
+    auto* two = arena.make_expr<paracl::IntLiteral> (2);
+    auto* three = arena.make_expr<paracl::IntLiteral> (3);
+
+    paracl::BinaryExpr and_false (paracl::BinOp::And, zero, two);
+    paracl::BinaryExpr and_true (paracl::BinOp::And, two, three);
+    paracl::BinaryExpr or_false (paracl::BinOp::Or, zero, zero);
+    paracl::BinaryExpr or_true (paracl::BinOp::Or, zero, three);
+    paracl::BinaryExpr xor_false (paracl::BinOp::Xor, two, three);
+    paracl::BinaryExpr xor_true (paracl::BinOp::Xor, zero, three);
+
+    EXPECT_EQ (and_false.eval (ctx), 0);
+    EXPECT_EQ (and_true.eval (ctx), 1);
+    EXPECT_EQ (or_false.eval (ctx), 0);
+    EXPECT_EQ (or_true.eval (ctx), 1);
+    EXPECT_EQ (xor_false.eval (ctx), 0);
+    EXPECT_EQ (xor_true.eval (ctx), 1);
+}
+
+TEST (BinaryExprTest, LogicalAndShortCircuit)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* zero = arena.make_expr<paracl::IntLiteral> (0);
+    auto* ten = arena.make_expr<paracl::IntLiteral> (10);
+    auto* div_zero_rhs = arena.make_expr<paracl::BinaryExpr> (
+        paracl::BinOp::Div, ten, zero);
+
+    paracl::BinaryExpr and_expr (paracl::BinOp::And, zero, div_zero_rhs);
+
+    EXPECT_NO_THROW ({
+        EXPECT_EQ (and_expr.eval (ctx), 0);
+    });
+}
+
+TEST (BinaryExprTest, LogicalOrShortCircuit)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* one = arena.make_expr<paracl::IntLiteral> (1);
+    auto* ten = arena.make_expr<paracl::IntLiteral> (10);
+    auto* zero = arena.make_expr<paracl::IntLiteral> (0);
+    auto* div_zero_rhs = arena.make_expr<paracl::BinaryExpr> (
+        paracl::BinOp::Div, ten, zero);
+
+    paracl::BinaryExpr or_expr (paracl::BinOp::Or, one, div_zero_rhs);
+
+    EXPECT_NO_THROW ({
+        EXPECT_EQ (or_expr.eval (ctx), 1);
+    });
+}
+
+// x = 42;  -> returns 42
+TEST (AssignExprTest, AssignsAndReturnsValue)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* val = arena.make_expr<paracl::IntLiteral> (42);
+
+    paracl::AssignExpr assign ("x", val);
+
+    EXPECT_EQ (assign.eval (ctx), 42);
+    EXPECT_EQ (ctx.get_var ("x"), 42);
+}
+
+// i = 2 + (j = 1 + (k = 1));
+// -> k = 1, j = 2, i = 4
+TEST (AssignExprTest, NestedAssignment)
+{
+    std::istringstream in;
+    std::ostringstream out;
+    paracl::Context ctx (in, out);
+
+    TestArena arena;
+    auto* one = arena.make_expr<paracl::IntLiteral> (1);
+    auto* k_assign = arena.make_expr<paracl::AssignExpr> ("k", one);
+
+    auto* one2 = arena.make_expr<paracl::IntLiteral> (1);
+    auto* j_rhs = arena.make_expr<paracl::BinaryExpr> (
+        paracl::BinOp::Add, one2, k_assign);
+    auto* j_assign = arena.make_expr<paracl::AssignExpr> ("j", j_rhs);
+
+    auto* two = arena.make_expr<paracl::IntLiteral> (2);
+    auto* i_rhs = arena.make_expr<paracl::BinaryExpr> (
+        paracl::BinOp::Add, two, j_assign);
+
+    paracl::AssignExpr i_assign ("i", i_rhs);
+
+    EXPECT_EQ (i_assign.eval (ctx), 4);
+    EXPECT_EQ (ctx.get_var ("i"), 4);
+    EXPECT_EQ (ctx.get_var ("j"), 2);
+    EXPECT_EQ (ctx.get_var ("k"), 1);
 }
 
 TEST (AssignStmtTest, AssignsVariable)
