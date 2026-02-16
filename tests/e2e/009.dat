@@ -1,0 +1,12 @@
+n = 10;
+a = 0;
+b = 1;
+iters = n;
+while (!(!iters))
+{
+    print a;
+    tmp = a + b;
+    a = b;
+    b = tmp;
+    iters = iters - 1;
+}

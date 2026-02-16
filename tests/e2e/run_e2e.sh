@@ -36,7 +36,12 @@ for dat_file in "$TEST_DIR"/*.dat; do
         continue
     fi
 
-    actual_output=$("$PROGRAM_BIN" "$dat_file" 2>/dev/null)
+    in_file="$TEST_DIR/${test_id}.in"
+    if [ -f "$in_file" ]; then
+        actual_output=$("$PROGRAM_BIN" "$dat_file" < "$in_file" 2>/dev/null)
+    else
+        actual_output=$("$PROGRAM_BIN" "$dat_file" 2>/dev/null)
+    fi
     expected_output=$(cat "$ans_file")
 
     if [ "$actual_output" == "$expected_output" ]; then
