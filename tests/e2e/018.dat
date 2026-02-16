@@ -1,0 +1,10 @@
+// while with complex logical condition
+a = 10;
+b = 20;
+while (a < 15 && b > 10)
+{
+    a = a + 1;
+    b = b - 3;
+}
+print a;
+print b;

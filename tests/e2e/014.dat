@@ -1,0 +1,6 @@
+// unary minus in various positions
+x = 5;
+print -x;
+print -(2 + 3);
+print -(-7);
+print 10 + -3;

@@ -71,12 +71,20 @@
 %token  LESS_OR_EQ     "<="
 %token  GREATER_OR_EQ  ">="
 
+%token AND             "&&"
+%token OR              "||"
+%token NOT             "!"
+%token XOR             "^" 
+
 %token  <int>          NUMBER
 %token  <std::string>  VAR
 %nterm  <const paracl::Stmt*>                    program
 %nterm  <std::vector<const paracl::Stmt*>>       stmt_list
 %nterm  <const paracl::Stmt*>                    stmt
 %nterm  <const paracl::Expr*>                    expr
+%nterm  <const paracl::Expr*>                    or_expr
+%nterm  <const paracl::Expr*>                    xor_expr
+%nterm  <const paracl::Expr*>                    and_expr
 %nterm  <const paracl::Expr*>                    cmp_expr
 %nterm  <const paracl::Expr*>                    add_expr
 %nterm  <const paracl::Expr*>                    mul_expr
@@ -117,12 +125,7 @@ stmt_list
   ;
 
 stmt
-  : VAR ASSIGN expr SCOLON
-    {
-      $$ = driver->builder().make_stmt<paracl::AssignStmt>(
-          std::move($1), $3, yy::make_loc(@$));
-    }
-  | PRINT expr SCOLON
+  : PRINT expr SCOLON
     {
       $$ = driver->builder().make_stmt<paracl::PrintStmt>(
           $2, yy::make_loc(@$));
@@ -155,7 +158,48 @@ stmt
   ;
 
 expr
-  : cmp_expr
+  : VAR ASSIGN expr
+    {
+      $$ = driver->builder().make_expr<paracl::AssignExpr>(
+          std::move($1), $3, yy::make_loc(@$));
+    }
+  | or_expr
+    {
+      $$ = $1;
+    }
+  ;
+
+or_expr
+  : or_expr OR xor_expr
+    {
+      $$ = driver->builder().make_expr<paracl::BinaryExpr>(
+          paracl::BinOp::Or, $1, $3, yy::make_loc(@$));
+    }
+  | xor_expr
+    {
+      $$ = $1;
+    }
+  ;
+
+xor_expr
+  : xor_expr XOR and_expr
+    {
+      $$ = driver->builder().make_expr<paracl::BinaryExpr>(
+          paracl::BinOp::Xor, $1, $3, yy::make_loc(@$));
+    }
+  | and_expr
+    {
+      $$ = $1;
+    }
+  ;
+
+and_expr
+  : and_expr AND cmp_expr
+    {
+      $$ = driver->builder().make_expr<paracl::BinaryExpr>(
+          paracl::BinOp::And, $1, $3, yy::make_loc(@$));
+    }
+  | cmp_expr
     {
       $$ = $1;
     }
@@ -238,7 +282,12 @@ mul_expr
   ;
 
 unary_expr
-  : SUB unary_expr
+  : NOT unary_expr
+    {
+      $$ = driver->builder().make_expr<paracl::UnaryExpr>(
+          paracl::UnOp::Not, $2, yy::make_loc(@$));
+    }
+  | SUB unary_expr
     {
       $$ = driver->builder().make_expr<paracl::UnaryExpr>(
           paracl::UnOp::Neg, $2, yy::make_loc(@$));

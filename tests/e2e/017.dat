@@ -1,0 +1,5 @@
+// empty blocks and minimal program
+{}
+x = 1;
+if (x) {}
+print x;

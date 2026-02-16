@@ -1,0 +1,10 @@
+// GCD
+a = ?;
+b = ?;
+while (b)
+{
+    tmp = b;
+    b = a % b;
+    a = tmp;
+}
+print a;

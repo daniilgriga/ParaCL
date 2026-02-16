@@ -18,12 +18,16 @@ namespace paracl
         Gt,   // >
         Ge,   // >=
         Eq,   // ==
-        Ne    // !=
+        Ne,   // !=
+        And,  // &&
+        Or,   // ||
+        Xor   // ^
     };
 
     enum class UnOp
     {
-        Neg   // -
+        Neg,  // -
+        Not   // !
     };
 
     inline std::string to_string (BinOp op)
@@ -41,6 +45,9 @@ namespace paracl
             case BinOp::Ge:  return ">=";
             case BinOp::Eq:  return "==";
             case BinOp::Ne:  return "!=";
+            case BinOp::And: return "&&";
+            case BinOp::Or:  return "||";
+            case BinOp::Xor: return "^";
         }
 
         throw std::logic_error ("unknown BinOp");
@@ -51,7 +58,7 @@ namespace paracl
         switch (op)
         {
             case UnOp::Neg: return "-";
-            // soon
+            case UnOp::Not: return "!";
         }
 
         throw std::logic_error ("unknown UnOp");

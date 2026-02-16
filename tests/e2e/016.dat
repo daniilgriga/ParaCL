@@ -1,0 +1,5 @@
+// comments should be ignored by the lexer
+// this is a comment
+x = 42; // inline comment
+// print 999;
+print x;
