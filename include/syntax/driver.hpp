@@ -32,6 +32,26 @@ namespace yy
             parser::token_type tt =
                 static_cast<parser::token_type> (plex_->yylex());
 
+            if (tt == parser::token_type::YYerror)
+            {
+                const std::string bad = plex_->text() ? plex_->text() : "";
+                const std::string msg = bad.empty()
+                    ? "invalid token"
+                    : "invalid token '" + bad + "'";
+
+                if (yylloc)
+                {
+                    error (*yylloc, msg);
+                }
+                else
+                {
+                    parser::location_type fallback;
+                    fallback.begin.filename = &source_name_;
+                    fallback.end.filename = &source_name_;
+                    error (fallback, msg);
+                }
+            }
+
             switch (tt)
             {
                 case parser::token_type::NUMBER:
