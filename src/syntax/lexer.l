@@ -24,6 +24,11 @@ LINE_COMMENT "//"[^\n]*
 "<"             { advance_location(yytext); return process_less(); }
 ">"             { advance_location(yytext); return process_greater(); }
 
+"&&"            { advance_location(yytext); return process_and(); }
+"||"            { advance_location(yytext); return process_or(); }
+"!"             { advance_location(yytext); return process_not(); }
+"^"             { advance_location(yytext); return process_xor(); }
+
 "+"             { advance_location(yytext); return process_add(); }
 "-"             { advance_location(yytext); return process_sub(); }
 "*"             { advance_location(yytext); return process_mul(); }
