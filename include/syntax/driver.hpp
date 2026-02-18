@@ -82,7 +82,22 @@ namespace yy
         void parse()
         {
             parser parser_ (this);
-            parser_.parse();
+            const int rc = parser_.parse();
+
+            if (rc != 0)
+            {
+                throw paracl::SyntaxError (
+                    "failed to parse '" + source_name_ +
+                    "': syntax analysis failed (rc=" + std::to_string (rc) + ")"
+                );
+            }
+
+            if (root() == nullptr)
+            {
+                throw paracl::SyntaxError (
+                    "failed to parse '" + source_name_ + "' - no program to execute"
+                );
+            }
         }
     };
 
