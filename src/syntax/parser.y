@@ -125,7 +125,12 @@ stmt_list
   ;
 
 stmt
-  : PRINT expr SCOLON
+  : SCOLON
+    {
+      $$ = driver->builder().make_stmt<paracl::BlockStmt>(
+          std::vector<const paracl::Stmt*>{}, yy::make_loc(@$));
+    }
+  | PRINT expr SCOLON
     {
       $$ = driver->builder().make_stmt<paracl::PrintStmt>(
           $2, yy::make_loc(@$));
