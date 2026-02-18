@@ -130,6 +130,35 @@ TEST (SyntaxParserTest, ParseBuildsRootAst)
     EXPECT_NE (driver.root (), nullptr);
 }
 
+TEST (SyntaxParserTest, EmptyProgramExecutes)
+{
+    EXPECT_EQ (run_program (""), "");
+}
+
+TEST (SyntaxParserTest, EmptyStatementProgramExecutes)
+{
+    EXPECT_EQ (run_program (";\n"), "");
+}
+
+TEST (SyntaxParserTest, TeacherRegressionSemicolonBeforeWhileReadLoop)
+{
+    const std::string source =
+        ";\n"
+        "while (?) {}\n";
+
+    EXPECT_EQ (run_program (source, "teacher_regression.paracl", "0\n"), "");
+}
+
+TEST (SyntaxParserTest, EmptyStatementsInBodiesParseAndExecute)
+{
+    const std::string source =
+        "while (?) ;\n"
+        "if (1) ; else ;\n"
+        "{ ; ; }\n";
+
+    EXPECT_EQ (run_program (source, "empty_stmt_bodies.paracl", "0\n"), "");
+}
+
 TEST (SyntaxParserTest, DanglingElseBindsToNearestIf)
 {
     std::istringstream source_stream (
