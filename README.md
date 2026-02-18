@@ -101,6 +101,13 @@ ctest --test-dir build/tests --output-on-failure
 ./tests/e2e/run_e2e.sh ./build/debug/paracl
 ```
 
+Each e2e case is identified by `<id>` and may contain:
+- `<id>.dat` — source program (required)
+- `<id>.ans` — expected stdout (required)
+- `<id>.in` — stdin for program (optional)
+- `<id>.rc` — expected process exit code (optional, default: `0`)
+- `<id>.err` — expected stderr (optional, checked only if file exists)
+
 ## Sample Programs With Input
 
 Programs for manual checks are in `tests/programs/`.
