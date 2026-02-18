@@ -31,16 +31,8 @@ int main (int argc, char* argv[])
     {
         driver.parse();
 
-        const paracl::Stmt* root = driver.builder().root();
-        if (!root)
-        {
-            std::cerr << "Error: failed to parse '" << filename
-                      << "' — no program to execute" << std::endl;
-            return 1;
-        }
-
         paracl::Context ctx (std::cin, std::cout);
-        root->exec (ctx);
+        driver.root()->exec (ctx);
     }
     catch (const paracl::ParaCLError& e)
     {
