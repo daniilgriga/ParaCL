@@ -12,45 +12,45 @@ LINE_COMMENT "//"[^\n]*
 
 %%
 
-"print"         { advance_location(yytext); return process_print(); }
-"if"            { advance_location(yytext); return process_if(); }
-"else"          { advance_location(yytext); return process_else(); }
-"while"         { advance_location(yytext); return process_while(); }
+"print"         { advance_location(yytext, yyleng); return yy::parser::token_type::PRINT; }
+"if"            { advance_location(yytext, yyleng); return yy::parser::token_type::IF; }
+"else"          { advance_location(yytext, yyleng); return yy::parser::token_type::ELSE; }
+"while"         { advance_location(yytext, yyleng); return yy::parser::token_type::WHILE; }
 
-"=="            { advance_location(yytext); return process_eq(); }
-"!="            { advance_location(yytext); return process_neq(); }
-"<="            { advance_location(yytext); return process_less_or_eq(); }
-">="            { advance_location(yytext); return process_greater_or_eq(); }
-"<"             { advance_location(yytext); return process_less(); }
-">"             { advance_location(yytext); return process_greater(); }
+"=="            { advance_location(yytext, yyleng); return yy::parser::token_type::EQ; }
+"!="            { advance_location(yytext, yyleng); return yy::parser::token_type::NEQ; }
+"<="            { advance_location(yytext, yyleng); return yy::parser::token_type::LESS_OR_EQ; }
+">="            { advance_location(yytext, yyleng); return yy::parser::token_type::GREATER_OR_EQ; }
+"<"             { advance_location(yytext, yyleng); return yy::parser::token_type::LESS; }
+">"             { advance_location(yytext, yyleng); return yy::parser::token_type::GREATER; }
 
-"&&"            { advance_location(yytext); return process_and(); }
-"||"            { advance_location(yytext); return process_or(); }
-"!"             { advance_location(yytext); return process_not(); }
-"^"             { advance_location(yytext); return process_xor(); }
+"&&"            { advance_location(yytext, yyleng); return yy::parser::token_type::AND; }
+"||"            { advance_location(yytext, yyleng); return yy::parser::token_type::OR; }
+"!"             { advance_location(yytext, yyleng); return yy::parser::token_type::NOT; }
+"^"             { advance_location(yytext, yyleng); return yy::parser::token_type::XOR; }
 
-"+"             { advance_location(yytext); return process_add(); }
-"-"             { advance_location(yytext); return process_sub(); }
-"*"             { advance_location(yytext); return process_mul(); }
-"/"             { advance_location(yytext); return process_div(); }
-"%"             { advance_location(yytext); return process_mod(); }
+"+"             { advance_location(yytext, yyleng); return yy::parser::token_type::ADD; }
+"-"             { advance_location(yytext, yyleng); return yy::parser::token_type::SUB; }
+"*"             { advance_location(yytext, yyleng); return yy::parser::token_type::MUL; }
+"/"             { advance_location(yytext, yyleng); return yy::parser::token_type::DIV; }
+"%"             { advance_location(yytext, yyleng); return yy::parser::token_type::MOD; }
 
-"="             { advance_location(yytext); return process_assign(); }
-";"             { advance_location(yytext); return process_scolon(); }
-"("             { advance_location(yytext); return process_left_paren(); }
-")"             { advance_location(yytext); return process_right_paren(); }
-"{"             { advance_location(yytext); return process_left_brace(); }
-"}"             { advance_location(yytext); return process_right_brace(); }
-"?"             { advance_location(yytext); return process_input(); }
+"="             { advance_location(yytext, yyleng); return yy::parser::token_type::ASSIGN; }
+";"             { advance_location(yytext, yyleng); return yy::parser::token_type::SCOLON; }
+"("             { advance_location(yytext, yyleng); return yy::parser::token_type::LEFT_PAREN; }
+")"             { advance_location(yytext, yyleng); return yy::parser::token_type::RIGHT_PAREN; }
+"{"             { advance_location(yytext, yyleng); return yy::parser::token_type::LEFT_BRACE; }
+"}"             { advance_location(yytext, yyleng); return yy::parser::token_type::RIGHT_BRACE; }
+"?"             { advance_location(yytext, yyleng); return yy::parser::token_type::INPUT; }
 
-"0"             { advance_location(yytext); return process_number(); }
-{DIGIT1}{DIGIT}*    { advance_location(yytext); return process_number(); }
-{ID}            { advance_location(yytext); return process_var(); }
+"0"             { advance_location(yytext, yyleng); return yy::parser::token_type::NUMBER; }
+{DIGIT1}{DIGIT}*    { advance_location(yytext, yyleng); return yy::parser::token_type::NUMBER; }
+{ID}            { advance_location(yytext, yyleng); return yy::parser::token_type::VAR; }
 
-{WS}            { advance_location(yytext); }
-{LINE_COMMENT}  { advance_location(yytext); }
+{WS}            { advance_location(yytext, yyleng); }
+{LINE_COMMENT}  { advance_location(yytext, yyleng); }
 
-"0"{DIGIT}+     { advance_location(yytext); return process_yyerror(); }
-.               { advance_location(yytext); return process_yyerror(); }
+"0"{DIGIT}+     { advance_location(yytext, yyleng); return yy::parser::token_type::YYerror; }
+.               { advance_location(yytext, yyleng); return yy::parser::token_type::YYerror; }
 
 %%
