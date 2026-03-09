@@ -3,6 +3,7 @@
 #include <string>
 
 #include "ast/ast_builder.hpp"
+#include "errors/errors.hpp"
 #include "parser.tab.hh"
 #include "syntax/lexer.hpp"
 
@@ -71,7 +72,17 @@ namespace yy
             return tt;
         }
 
-        void error (const yy::parser::location_type& loc, const std::string& msg);
+        void error (const yy::parser::location_type& loc, const std::string& msg)
+        {
+            const paracl::SourceLocation where
+            {
+                loc.begin.line,
+                loc.begin.column,
+                source_name_
+            };
+
+            throw paracl::SyntaxError (where, msg);
+        }
 
         paracl::AstBuilder& builder() { return builder_; }
         const paracl::AstBuilder& builder() const { return builder_; }

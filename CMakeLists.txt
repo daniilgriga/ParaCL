@@ -48,7 +48,6 @@ set_source_files_properties (
 
 add_executable (paracl
     src/main.cpp
-    src/syntax/driver.cpp
     ${BISON_ParaCLParser_OUTPUTS}
     ${FLEX_ParaCLLexer_OUTPUTS}
     ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.hh
@@ -89,7 +88,6 @@ if(BUILD_TESTS)
         tests/unit/test_ast_nodes.cpp
         tests/unit/test_ast_builder.cpp
         tests/unit/test_syntax.cpp
-        src/syntax/driver.cpp
         ${BISON_ParaCLParser_OUTPUTS}
         ${FLEX_ParaCLLexer_OUTPUTS}
     )
