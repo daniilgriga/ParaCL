@@ -9,7 +9,7 @@
 namespace paracl
 {
 
-    class Context
+    class Context final
     {
     private:
         std::unordered_map<std::string, int> vars_;
