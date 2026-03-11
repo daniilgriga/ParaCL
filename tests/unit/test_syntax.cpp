@@ -191,6 +191,26 @@ TEST (SyntaxParserTest, SyntaxErrorHasFileAndLocation)
     }
 }
 
+TEST (SyntaxParserTest, IntegerLiteralOverflowHasFileAndLocation)
+{
+    std::istringstream source_stream ("print 2147483648;\n");
+    yy::Lexer lexer (&source_stream);
+    yy::Driver driver (&lexer, "overflow_input.paracl");
+
+    try
+    {
+        driver.parse ();
+        FAIL () << "expected SyntaxError";
+    }
+    catch (const paracl::SyntaxError& e)
+    {
+        const std::string msg = e.what ();
+        EXPECT_NE (msg.find ("Syntax error"), std::string::npos);
+        EXPECT_NE (msg.find ("overflow_input.paracl:1:7"), std::string::npos);
+        EXPECT_NE (msg.find ("integer literal out of range"), std::string::npos);
+    }
+}
+
 TEST (SyntaxLogicalTest, UnaryAndBinaryLogicalOps)
 {
     const std::string source =
