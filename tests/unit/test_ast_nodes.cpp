@@ -349,7 +349,7 @@ TEST (AssignExprTest, NestedAssignment)
     EXPECT_EQ (ctx.get_var ("k"), 1);
 }
 
-TEST (AssignStmtTest, AssignsVariable)
+TEST (ExprStmtTest, AssignmentExpressionAssignsVariable)
 {
     std::istringstream in;
     std::ostringstream out;
@@ -357,9 +357,10 @@ TEST (AssignStmtTest, AssignsVariable)
 
     TestArena arena;
     auto* val = arena.make_expr<paracl::IntLiteral> (42);
+    auto* assign_expr = arena.make_expr<paracl::AssignExpr> ("x", val);
 
-    paracl::AssignStmt assign ("x", val);
-    assign.exec (ctx);
+    paracl::ExprStmt assign_stmt (assign_expr);
+    assign_stmt.exec (ctx);
 
     EXPECT_EQ (ctx.get_var ("x"), 42);
 }
@@ -442,7 +443,8 @@ TEST (IntegrationTest, AssignAndPrint)
     auto* sum = arena.make_expr<paracl::BinaryExpr> (paracl::BinOp::Add, two, three);
     auto* var_x = arena.make_expr<paracl::VarRef> ("x");
 
-    auto* assign = arena.make_stmt<paracl::AssignStmt> ("x", sum);
+    auto* assign_expr = arena.make_expr<paracl::AssignExpr> ("x", sum);
+    auto* assign = arena.make_stmt<paracl::ExprStmt> (assign_expr);
     auto* print = arena.make_stmt<paracl::PrintStmt> (var_x);
 
     paracl::BlockStmt program ({assign, print});
@@ -463,7 +465,8 @@ TEST (IntegrationTest, ReadAndPrint)
     auto* read = arena.make_expr<paracl::ReadExpr>();
     auto* var_x = arena.make_expr<paracl::VarRef> ("x");
 
-    auto* assign = arena.make_stmt<paracl::AssignStmt> ("x", read);
+    auto* assign_expr = arena.make_expr<paracl::AssignExpr> ("x", read);
+    auto* assign = arena.make_stmt<paracl::ExprStmt> (assign_expr);
     auto* print = arena.make_stmt<paracl::PrintStmt> (var_x);
 
     paracl::BlockStmt program ({assign, print});
@@ -619,7 +622,8 @@ TEST (WhileStmtTest, CountDown)
 
     auto* print_x = arena.make_stmt<paracl::PrintStmt> (
         arena.make_expr<paracl::VarRef> ("x"));
-    auto* assign_x = arena.make_stmt<paracl::AssignStmt> ("x", x_minus_1);
+    auto* assign_expr = arena.make_expr<paracl::AssignExpr> ("x", x_minus_1);
+    auto* assign_x = arena.make_stmt<paracl::ExprStmt> (assign_expr);
 
     auto* body = arena.make_stmt<paracl::BlockStmt> (
         std::vector<const paracl::Stmt*>{print_x, assign_x});
@@ -654,8 +658,10 @@ TEST (IntegrationTest, IfWithComparison)
 
     auto* ten = arena.make_expr<paracl::IntLiteral> (10);
     auto* twenty = arena.make_expr<paracl::IntLiteral> (20);
-    auto* then_branch = arena.make_stmt<paracl::AssignStmt> ("x", ten);
-    auto* else_branch = arena.make_stmt<paracl::AssignStmt> ("x", twenty);
+    auto* then_assign_expr = arena.make_expr<paracl::AssignExpr> ("x", ten);
+    auto* else_assign_expr = arena.make_expr<paracl::AssignExpr> ("x", twenty);
+    auto* then_branch = arena.make_stmt<paracl::ExprStmt> (then_assign_expr);
+    auto* else_branch = arena.make_stmt<paracl::ExprStmt> (else_assign_expr);
 
     auto* if_stmt = arena.make_stmt<paracl::IfStmt> (cond, then_branch, else_branch);
     auto* print_x = arena.make_stmt<paracl::PrintStmt> (
