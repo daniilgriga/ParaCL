@@ -49,7 +49,8 @@ TEST (AstBuilderTest, FullPipeline)
 
     // x = 5;
     const auto* five = builder.make_expr<paracl::IntLiteral> (5);
-    const auto* assign = builder.make_stmt<paracl::AssignStmt> ("x", five);
+    const auto* assign_expr = builder.make_expr<paracl::AssignExpr> ("x", five);
+    const auto* assign = builder.make_stmt<paracl::ExprStmt> (assign_expr);
 
     // print (x + 1);
     const auto* var_x = builder.make_expr<paracl::VarRef> ("x");
