@@ -84,8 +84,8 @@ namespace yy
             throw paracl::SyntaxError (where, msg);
         }
 
-        paracl::AstBuilder& builder() { return builder_; }
-        const paracl::AstBuilder& builder() const { return builder_; }
+        paracl::AstBuilder& builder() & { return builder_; }
+        const paracl::AstBuilder& builder() const & { return builder_; }
 
         void set_root (const paracl::Stmt* root) { builder_.set_root (root); }
         const paracl::Stmt* root() const { return builder_.root(); }
