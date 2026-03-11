@@ -1,7 +1,9 @@
 #pragma once
 
+#include <functional>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 #include "errors/errors.hpp"
@@ -9,10 +11,30 @@
 namespace paracl
 {
 
+    struct StringHash
+    {
+        using is_transparent = void;
+
+        size_t operator() (std::string_view sv) const
+        {
+            return std::hash<std::string_view>{} (sv);
+        }
+    };
+
+    struct StringEqual
+    {
+        using is_transparent = void;
+
+        bool operator() (std::string_view a, std::string_view b) const
+        {
+            return a == b;
+        }
+    };
+
     class Context final
     {
     private:
-        std::unordered_map<std::string, int> vars_;
+        std::unordered_map<std::string, int, StringHash, StringEqual> vars_;
 
         std::istream& in_;
         std::ostream& out_;
@@ -23,32 +45,32 @@ namespace paracl
 
         Context() : in_ (std::cin), out_ (std::cout) {}
 
-        bool has_var (const std::string& name) const
+        bool has_var (std::string_view name) const
         {
-            return vars_.count (name) > 0;
+            return vars_.find (name) != vars_.end();
         }
 
-        int get_var (const std::string& name) const
+        int get_var (std::string_view name) const
         {
             auto it = vars_.find (name);
             if (it == vars_.end())
-                throw RuntimeError ("undefined variable '" + name + "'");
+                throw RuntimeError ("undefined variable '" + std::string{name} + "'");
 
             return it->second;
         }
 
-        int get_var (const std::string& name, SourceLocation loc) const
+        int get_var (std::string_view name, SourceLocation loc) const
         {
             auto it = vars_.find (name);
             if (it == vars_.end())
-                throw RuntimeError (loc, "undefined variable '" + name + "'");
+                throw RuntimeError (loc, "undefined variable '" + std::string{name} + "'");
 
             return it->second;
         }
 
-        void set_var (const std::string& name, int value)
+        void set_var (std::string_view name, int value)
         {
-            vars_[name] = value;
+            vars_[std::string{name}] = value;
         }
 
         int read_int()
