@@ -12,25 +12,6 @@
 namespace paracl
 {
 
-    class AssignStmt final : public Stmt
-    {
-    private:
-        std::string name_;
-        const Expr* rhs_;
-
-    public:
-        AssignStmt (std::string name, const Expr* rhs, SourceLocation loc = {})
-            : Stmt (loc), name_ (std::move (name)), rhs_ (rhs)
-        {
-            assert (rhs_ && "AssignStmt: rhs must not be null");
-        }
-
-        void exec (Context& ctx) const override
-        {
-            ctx.set_var (name_, rhs_->eval (ctx));
-        }
-    };
-
     class PrintStmt final : public Stmt
     {
     private:

@@ -7,7 +7,7 @@
 namespace paracl
 {
 
-    struct SourceLocation
+    struct SourceLocation final
     {
         int line = 0;
         int column = 0;

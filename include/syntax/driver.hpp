@@ -1,5 +1,7 @@
 #pragma once
 
+#include <charconv>
+#include <cstring>
 #include <string>
 
 #include "ast/ast_builder.hpp"
@@ -14,6 +16,18 @@ namespace yy
         Lexer* plex_;
         std::string source_name_;
         paracl::AstBuilder builder_;
+
+        void throw_syntax_error (parser::location_type* yylloc,
+                                 const std::string& msg)
+        {
+            if (yylloc)
+                error (*yylloc, msg);
+
+            parser::location_type fallback;
+            fallback.begin.filename = &source_name_;
+            fallback.end.filename = &source_name_;
+            error (fallback, msg);
+        }
 
     public:
         explicit Driver (Lexer* plex, std::string source_name = "<stdin>")
@@ -39,25 +53,26 @@ namespace yy
                 const std::string msg = bad.empty()
                     ? "invalid token"
                     : "invalid token '" + bad + "'";
-
-                if (yylloc)
-                {
-                    error (*yylloc, msg);
-                }
-                else
-                {
-                    parser::location_type fallback;
-                    fallback.begin.filename = &source_name_;
-                    fallback.end.filename = &source_name_;
-                    error (fallback, msg);
-                }
+                throw_syntax_error (yylloc, msg);
             }
 
             switch (tt)
             {
                 case parser::token_type::NUMBER:
                 {
-                    yylval->emplace<int> (std::stoi (plex_->text()));
+                    const char* text = plex_->text() ? plex_->text() : "";
+                    const size_t len = std::strlen (text);
+                    const std::string bad (text, len);
+
+                    int value = 0;
+                    const auto [ptr, ec] = std::from_chars (text, text + len, value);
+                    if (ec == std::errc::result_out_of_range)
+                        throw_syntax_error (yylloc, "integer literal out of range '" + bad + "'");
+
+                    if (ec != std::errc{} || ptr != text + len)
+                        throw_syntax_error (yylloc, "invalid integer literal '" + bad + "'");
+
+                    yylval->emplace<int> (value);
                     break;
                 }
                 case parser::token_type::VAR:
@@ -84,8 +99,8 @@ namespace yy
             throw paracl::SyntaxError (where, msg);
         }
 
-        paracl::AstBuilder& builder() { return builder_; }
-        const paracl::AstBuilder& builder() const { return builder_; }
+        paracl::AstBuilder& builder() & { return builder_; }
+        const paracl::AstBuilder& builder() const & { return builder_; }
 
         void set_root (const paracl::Stmt* root) { builder_.set_root (root); }
         const paracl::Stmt* root() const { return builder_.root(); }
