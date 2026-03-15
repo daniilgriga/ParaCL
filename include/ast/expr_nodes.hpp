@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "ast/expr.hpp"
@@ -20,6 +21,8 @@ namespace paracl
         explicit IntLiteral (int value, SourceLocation loc = {})
             : Expr (loc), value_ (value) {}
 
+        int value() const { return value_; }
+
         int eval (Context&) const override
         {
             return value_;
@@ -34,6 +37,8 @@ namespace paracl
     public:
         explicit VarRef (std::string name, SourceLocation loc = {})
             : Expr (loc), name_ (std::move (name)) {}
+
+        std::string_view name() const { return name_; }
 
         int eval (Context& ctx) const override
         {
@@ -66,6 +71,9 @@ namespace paracl
             assert (child_ && "UnaryExpr: child must not be null");
         }
 
+        UnOp op() const { return op_; }
+        const Expr* child() const { return child_; }
+
         int eval (Context& ctx) const override
         {
             int val = child_->eval (ctx);
@@ -95,6 +103,9 @@ namespace paracl
             assert (rhs_ && "AssignExpr: rhs must not be null");
         }
 
+        std::string_view name() const { return name_; }
+        const Expr* rhs() const { return rhs_; }
+
         int eval (Context& ctx) const override
         {
             int value = rhs_->eval (ctx);
@@ -120,6 +131,10 @@ namespace paracl
             assert (lhs_ && "BinaryExpr: lhs must not be null");
             assert (rhs_ && "BinaryExpr: rhs must not be null");
         }
+
+        BinOp op() const { return op_; }
+        const Expr* lhs() const { return lhs_; }
+        const Expr* rhs() const { return rhs_; }
 
         int eval (Context& ctx) const override
         {
