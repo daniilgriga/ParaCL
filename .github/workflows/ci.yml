@@ -7,6 +7,9 @@ on:
     branches: [dev, main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -14,6 +17,7 @@ concurrency:
 jobs:
   build-ubuntu:
     name: Ubuntu (GCC Debug)
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 30
     env:
@@ -49,6 +53,7 @@ jobs:
 
   build-ubuntu-sanitizers:
     name: Ubuntu (GCC + Sanitizers)
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: [self-hosted, Linux, X64]
     needs: build-ubuntu
     timeout-minutes: 40
@@ -78,6 +83,7 @@ jobs:
 
   build-ubuntu-release:
     name: Ubuntu (GCC Release)
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: [self-hosted, Linux, X64]
     needs: build-ubuntu-sanitizers
     timeout-minutes: 30
@@ -106,6 +112,7 @@ jobs:
 
   build-macos:
     name: macOS (Clang)
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: macos-latest
     needs: build-ubuntu-release
     timeout-minutes: 30
@@ -134,3 +141,36 @@ jobs:
 
       - name: E2E tests
         run: ./tests/e2e/run_e2e.sh ./build/macos/paracl
+
+  build-ubuntu-fork-pr:
+    name: Ubuntu (Fork PR Safe)
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 1
+      CTEST_PARALLEL_LEVEL: 1
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build bison flex g++
+
+      - name: Configure
+        run: >
+          cmake -S . -B build/ubuntu-fork
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_TESTS=ON
+
+      - name: Build
+        run: cmake --build build/ubuntu-fork -- -j1
+
+      - name: Unit tests
+        run: ctest --test-dir build/ubuntu-fork --output-on-failure -j1
+
+      - name: E2E tests
+        run: ./tests/e2e/run_e2e.sh ./build/ubuntu-fork/paracl
