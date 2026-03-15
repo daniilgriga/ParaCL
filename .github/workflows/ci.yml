@@ -29,7 +29,7 @@ jobs:
         run: ctest --test-dir build/ubuntu --output-on-failure
 
       - name: E2E tests
-        run: ./tests/e2e/run_e2e.sh ./build/ubuntu/paracl
+        run: ./tests/e2e/run_e2e.sh ./build/ubuntu/paracli
 
   build-ubuntu-sanitizers:
     name: Ubuntu (GCC + Sanitizers)
@@ -54,7 +54,7 @@ jobs:
         run: ctest --test-dir build/ubuntu-sanitize --output-on-failure
 
       - name: E2E tests
-        run: ./tests/e2e/run_e2e.sh ./build/ubuntu-sanitize/paracl
+        run: ./tests/e2e/run_e2e.sh ./build/ubuntu-sanitize/paracli
 
   build-ubuntu-release:
     name: Ubuntu (GCC Release)
@@ -79,7 +79,7 @@ jobs:
         run: ctest --test-dir build/release --output-on-failure
 
       - name: E2E tests
-        run: ./tests/e2e/run_e2e.sh ./build/release/paracl
+        run: ./tests/e2e/run_e2e.sh ./build/release/paracli
 
   build-macos:
     name: macOS (Clang)
@@ -104,4 +104,4 @@ jobs:
         run: ctest --test-dir build/macos --output-on-failure
 
       - name: E2E tests
-        run: ./tests/e2e/run_e2e.sh ./build/macos/paracl
+        run: ./tests/e2e/run_e2e.sh ./build/macos/paracli

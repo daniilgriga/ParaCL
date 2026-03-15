@@ -7,6 +7,7 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option (SANITIZE "Enable Address and Undefined sanitizers" OFF)
 option (BUILD_TESTS "Build tests" ON)
+option (BUILD_COMPILER "Build LLVM-based compiler target" OFF)
 
 if(MSVC)
     set (COMMON_COMPILE_OPTIONS /W4 /WX)
@@ -25,7 +26,11 @@ endif()
 
 find_package (BISON REQUIRED)
 find_package (FLEX REQUIRED)
-find_package (LLVM REQUIRED CONFIG)
+
+if(BUILD_COMPILER)
+    find_package (LLVM REQUIRED CONFIG)
+    message (STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+endif()
 
 set (COMPILE_NAME ${PROJECT_NAME})
 set (INTERP_NAME "${PROJECT_NAME}i")
@@ -100,25 +105,27 @@ set_target_properties (${INTERP_NAME} PROPERTIES OUTPUT_NAME paracli)
 target_compile_definitions (${INTERP_NAME} PRIVATE PARACL_INTERP=1)
 paracl_apply_common_target_settings (${INTERP_NAME})
 
-llvm_map_components_to_libnames (PARACL_LLVM_LIBS support core codegen irreader)
+if(BUILD_COMPILER)
+    llvm_map_components_to_libnames (PARACL_LLVM_LIBS support core codegen irreader)
 
-add_executable (${COMPILE_NAME}
-    src/main.cpp
-    ${PARACL_FRONTEND_SOURCES}
-    ${PARACL_CODEGEN_SOURCES}
-)
+    add_executable (${COMPILE_NAME}
+        src/main.cpp
+        ${PARACL_FRONTEND_SOURCES}
+        ${PARACL_CODEGEN_SOURCES}
+    )
 
-set_target_properties (${COMPILE_NAME} PROPERTIES OUTPUT_NAME paracl)
+    set_target_properties (${COMPILE_NAME} PROPERTIES OUTPUT_NAME paracl)
 
-target_compile_definitions (${COMPILE_NAME} PRIVATE
-    PARACL_CODEGEN=1
-    $<$<CONFIG:Debug>:DUMPALL>
-)
+    target_compile_definitions (${COMPILE_NAME} PRIVATE
+        PARACL_CODEGEN=1
+        $<$<CONFIG:Debug>:DUMPALL>
+    )
 
-paracl_apply_common_target_settings (${COMPILE_NAME})
+    paracl_apply_common_target_settings (${COMPILE_NAME})
 
-target_include_directories (${COMPILE_NAME} SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS})
-target_link_libraries (${COMPILE_NAME} PRIVATE ${PARACL_LLVM_LIBS})
+    target_include_directories (${COMPILE_NAME} SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS})
+    target_link_libraries (${COMPILE_NAME} PRIVATE ${PARACL_LLVM_LIBS})
+endif()
 
 if(BUILD_TESTS)
     enable_testing()
