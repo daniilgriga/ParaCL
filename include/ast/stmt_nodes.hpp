@@ -24,6 +24,8 @@ namespace paracl
             assert (expr_ && "PrintStmt: expr must not be null");
         }
 
+        const Expr* expr() const { return expr_; }
+
         void exec (Context& ctx) const override
         {
             ctx.print_int (expr_->eval (ctx));
@@ -41,6 +43,8 @@ namespace paracl
         {
             assert (expr_ && "ExprStmt: expr must not be null");
         }
+
+        const Expr* expr() const { return expr_; }
 
         void exec (Context& ctx) const override
         {
@@ -62,6 +66,8 @@ namespace paracl
                 assert (s && "BlockStmt: statement must not be null");
             }
         }
+
+        const std::vector<const Stmt*>& stmts() const { return stmts_; }
 
         void exec (Context& ctx) const override
         {
@@ -89,6 +95,10 @@ namespace paracl
             // else_ can be nullptr — if without else
         }
 
+        const Expr* cond() const { return cond_; }
+        const Stmt* then_branch() const { return then_; }
+        const Stmt* else_branch() const { return else_; }
+
         void exec (Context& ctx) const override
         {
             if (cond_->eval (ctx) != 0)
@@ -111,6 +121,9 @@ namespace paracl
             assert (cond_ && "WhileStmt: cond must not be null");
             assert (body_ && "WhileStmt: body must not be null");
         }
+
+        const Expr* cond() const { return cond_; }
+        const Stmt* body() const { return body_; }
 
         void exec (Context& ctx) const override
         {
