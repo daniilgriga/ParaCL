@@ -108,6 +108,11 @@ paracl_apply_common_target_settings (${INTERP_NAME})
 if(BUILD_COMPILER)
     llvm_map_components_to_libnames (PARACL_LLVM_LIBS support core codegen irreader)
 
+    # runtime library
+    add_library (pclrt STATIC runtime/pclrt.cpp)
+    set_target_properties (pclrt PROPERTIES OUTPUT_NAME pclrt)
+    target_compile_options (pclrt PRIVATE ${COMMON_COMPILE_OPTIONS})
+
     add_executable (${COMPILE_NAME}
         src/main.cpp
         ${PARACL_FRONTEND_SOURCES}
