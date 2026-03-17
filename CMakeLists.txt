@@ -106,7 +106,11 @@ target_compile_definitions (${INTERP_NAME} PRIVATE PARACL_INTERP=1)
 paracl_apply_common_target_settings (${INTERP_NAME})
 
 if(BUILD_COMPILER)
-    llvm_map_components_to_libnames (PARACL_LLVM_LIBS support core codegen irreader)
+    if (TARGET LLVM)
+        set (PARACL_LLVM_LIBS LLVM)
+    else()
+        llvm_map_components_to_libnames (PARACL_LLVM_LIBS support core codegen irreader)
+    endif()
 
     # runtime library
     add_library (pclrt STATIC runtime/pclrt.cpp)
@@ -130,6 +134,10 @@ if(BUILD_COMPILER)
 
     target_include_directories (${COMPILE_NAME} SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS})
     target_link_libraries (${COMPILE_NAME} PRIVATE ${PARACL_LLVM_LIBS})
+
+    if (NOT MSVC)
+        target_compile_options (${COMPILE_NAME} PRIVATE -fno-rtti)
+    endif()
 endif()
 
 if(BUILD_TESTS)
