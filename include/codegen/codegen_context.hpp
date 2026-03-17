@@ -1,12 +1,15 @@
 #pragma once
 
 #include <memory>
+#include <span>
 #include <string>
 #include <unordered_map>
 
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/Type.h>
 
 namespace paracl::codegen
 {
@@ -52,6 +55,18 @@ namespace paracl::codegen
         {
             return named_values_;
         }
+
+        llvm::Type* get_i32_type();
+
+        llvm::Type* get_void_type();
+
+        llvm::AllocaInst* create_alloca_in_entry (const std::string& name);
+
+        llvm::Function* get_or_insert_extern_function (
+            const std::string& name,
+            llvm::Type* return_type,
+            std::span<llvm::Type* const> param_types);
+            // param_types like a representation of a continuous memory segment
     };
 
 } // namespace paracl::codegen
