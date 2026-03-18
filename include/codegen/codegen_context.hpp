@@ -56,6 +56,8 @@ namespace paracl::codegen
             return named_values_;
         }
 
+        std::unique_ptr<llvm::Module> module_owner() { return std::move (module_); }
+
         llvm::Type* get_i32_type();
 
         llvm::Type* get_void_type();
