@@ -18,7 +18,7 @@ jobs:
   build-ubuntu:
     name: Ubuntu (GCC Debug)
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, light]
     timeout-minutes: 30
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 1
@@ -30,10 +30,13 @@ jobs:
       - name: Show runner info
         run: |
           whoami
+          hostname
           uname -a
           cmake --version
           ninja --version
           g++ --version
+          bison --version
+          flex --version
 
       - name: Configure
         run: >
@@ -54,7 +57,7 @@ jobs:
   build-ubuntu-sanitizers:
     name: Ubuntu (GCC + Sanitizers)
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, light]
     needs: build-ubuntu
     timeout-minutes: 40
     env:
@@ -84,7 +87,7 @@ jobs:
   build-ubuntu-release:
     name: Ubuntu (GCC Release)
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, light]
     needs: build-ubuntu-sanitizers
     timeout-minutes: 30
     env:

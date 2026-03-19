@@ -23,10 +23,8 @@ namespace paracl
 
         int value() const { return value_; }
 
-        int eval (Context&) const override
-        {
-            return value_;
-        }
+        int eval (Context&) const override { return value_; }
+        void accept (IExprVisitor& v) const override { v.visit (*this); }
     };
 
     class VarRef final : public Expr
@@ -40,10 +38,8 @@ namespace paracl
 
         std::string_view name() const { return name_; }
 
-        int eval (Context& ctx) const override
-        {
-            return ctx.get_var (name_, loc());
-        }
+        int eval (Context& ctx) const override { return ctx.get_var (name_, loc()); }
+        void accept (IExprVisitor& v) const override { v.visit (*this); }
     };
 
     class ReadExpr final : public Expr
@@ -52,10 +48,8 @@ namespace paracl
         explicit ReadExpr (SourceLocation loc = {})
             : Expr (loc) {}
 
-        int eval (Context& ctx) const override
-        {
-            return ctx.read_int (loc());
-        }
+        int eval (Context& ctx) const override { return ctx.read_int (loc()); }
+        void accept (IExprVisitor& v) const override { v.visit (*this); }
     };
 
     class UnaryExpr final : public Expr
@@ -73,6 +67,8 @@ namespace paracl
 
         UnOp op() const { return op_; }
         const Expr* child() const { return child_; }
+
+        void accept (IExprVisitor& v) const override { v.visit (*this); }
 
         int eval (Context& ctx) const override
         {
@@ -106,6 +102,8 @@ namespace paracl
         std::string_view name() const { return name_; }
         const Expr* rhs() const { return rhs_; }
 
+        void accept (IExprVisitor& v) const override { v.visit (*this); }
+
         int eval (Context& ctx) const override
         {
             int value = rhs_->eval (ctx);
@@ -135,6 +133,8 @@ namespace paracl
         BinOp op() const { return op_; }
         const Expr* lhs() const { return lhs_; }
         const Expr* rhs() const { return rhs_; }
+
+        void accept (IExprVisitor& v) const override { v.visit (*this); }
 
         int eval (Context& ctx) const override
         {
