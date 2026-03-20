@@ -15,6 +15,19 @@
 namespace paracl::codegen
 {
 
+    namespace
+    {
+        llvm::Value* to_bool (CodegenContext& cg, llvm::Value* value)
+        {
+            return cg.builder().CreateICmpNE(
+                value,
+                llvm::ConstantInt::get(cg.get_i32_type(), 0),
+                "tobool"
+            );
+        }
+
+    } // namespace
+
     ExprCodegen::ExprCodegen (CodegenContext& cg)
         : cg_ (cg)
     {
@@ -46,6 +59,54 @@ namespace paracl::codegen
         named[name] = slot;
 
         return slot;
+    }
+
+    llvm::Value* ExprCodegen::emit_short_circuit (const BinaryExpr& node)
+    {
+        auto& b = cg_.builder();
+        llvm::Function* fn = cg_.current_function();
+        assert (fn && "ExprCodegen::emit_short_circuit: no active function");
+        assert ((node.op() == BinOp::And || node.op() == BinOp::Or) &&
+                "ExprCodegen::emit_short_circuit: expected && or ||");
+
+        llvm::Value* lhs = emit (node.lhs());
+        llvm::Value* lhs_bool = to_bool (cg_, lhs);
+
+        const std::string prefix = (node.op() == BinOp::Or) ? "or" : "and";
+        const int short_result = (node.op() == BinOp::Or) ? 1 : 0;
+
+        llvm::BasicBlock* rhs_bb =
+            llvm::BasicBlock::Create (cg_.llvm_context(), prefix + ".rhs", fn);
+        llvm::BasicBlock* short_bb =
+            llvm::BasicBlock::Create (cg_.llvm_context(), prefix + ".short", fn);
+        llvm::BasicBlock* merge_bb =
+            llvm::BasicBlock::Create (cg_.llvm_context(), prefix + ".merge", fn);
+
+        if (node.op() == BinOp::Or)
+            b.CreateCondBr (lhs_bool, short_bb, rhs_bb);
+        else
+            b.CreateCondBr (lhs_bool, rhs_bb, short_bb);
+
+        b.SetInsertPoint (short_bb);
+        llvm::Value* short_value =
+            llvm::ConstantInt::get (cg_.get_i32_type(), short_result);
+        b.CreateBr (merge_bb);
+        short_bb = b.GetInsertBlock();
+
+        b.SetInsertPoint (rhs_bb);
+        llvm::Value* rhs = emit (node.rhs());
+        llvm::Value* rhs_bool = to_bool (cg_, rhs);
+        llvm::Value* rhs_i32 =
+            b.CreateZExt (rhs_bool, cg_.get_i32_type(), prefix + ".rhs.i32");
+        b.CreateBr (merge_bb);
+        rhs_bb = b.GetInsertBlock();
+
+        b.SetInsertPoint (merge_bb);
+        llvm::PHINode* phi = b.CreatePHI (cg_.get_i32_type(), 2, prefix);
+        phi->addIncoming (short_value, short_bb);
+        phi->addIncoming (rhs_i32, rhs_bb);
+
+        return phi;
     }
 
     // -----------------------------------------------------------------------
@@ -123,17 +184,15 @@ namespace paracl::codegen
     }
 
     // -----------------------------------------------------------------------
-    // BinaryExpr: arithmetic, comparisons, logical xor
-    // &&/|| require BasicBlock branching (short-circuit) - handled by the
-    // CFG pass (StmtCodegen)
+    // BinaryExpr: arithmetic, comparisons, logical xor and short-circuit
+    // logical operators.
     // -----------------------------------------------------------------------
     void ExprCodegen::visit (const BinaryExpr& node)
     {
-        if (node.op() == BinOp::And || node.op() == BinOp::Or)
+        if (node.op() == BinOp::Or || node.op() == BinOp::And)
         {
-            throw std::logic_error (
-                "ExprCodegen: && and || require CFG lowering - "
-                "not handled here");
+            result_ = emit_short_circuit (node);
+            return;
         }
 
         auto& b = cg_.builder();

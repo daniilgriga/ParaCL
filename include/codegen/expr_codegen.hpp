@@ -26,6 +26,7 @@ namespace paracl::codegen
         void visit (const BinaryExpr&  node) override;
 
         llvm::AllocaInst* get_or_create_slot (const std::string& name);
+        llvm::Value* emit_short_circuit (const BinaryExpr& node);
 
     public:
         explicit ExprCodegen (CodegenContext& cg);
