@@ -76,7 +76,8 @@ namespace paracl::codegen
     }
 
     // -----------------------------------------------------------------------
-    // IfStmt / WhileStmt: require BasicBlock branching - CFG zone
+    // IfStmt: lower structured if/else into CFG
+    //   cond -> if.then / if.else(or if.merge) -> if.merge
     // -----------------------------------------------------------------------
     void StmtCodegen::visit (const IfStmt& node)
     {
@@ -119,6 +120,13 @@ namespace paracl::codegen
 
         cg_.builder().SetInsertPoint (merge_bb);
     }
+
+    // -----------------------------------------------------------------------
+    // WhileStmt: lower loop into CFG with a condition block and back-edge
+    //   current -> while.cond
+    //   while.cond -> while.body / while.after
+    //   while.body -> while.cond
+    // -----------------------------------------------------------------------
 
     void StmtCodegen::visit (const WhileStmt& node)
     {
