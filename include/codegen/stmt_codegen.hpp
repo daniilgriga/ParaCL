@@ -1,16 +1,22 @@
 #pragma once
 
-namespace paracl
-{
-    class Stmt;
-}
+#include "ast/stmt.hpp" // IStmtVisitor
 
 namespace paracl::codegen
 {
     class CodegenContext;
 
-    class StmtCodegen final
+    class StmtCodegen final : public IStmtVisitor
     {
+    private:
+        CodegenContext& cg_;
+
+        void visit (const ExprStmt&  node) override;
+        void visit (const PrintStmt& node) override;
+        void visit (const BlockStmt& node) override;
+        void visit (const IfStmt&    node) override;
+        void visit (const WhileStmt& node) override;
+
     public:
         explicit StmtCodegen (CodegenContext& cg);
 
@@ -21,9 +27,6 @@ namespace paracl::codegen
         StmtCodegen& operator= (StmtCodegen&&) = delete;
 
         void emit (const Stmt* stmt);
-
-    private:
-        CodegenContext& cg_;
     };
 
 } // namespace paracl::codegen

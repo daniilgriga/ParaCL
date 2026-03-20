@@ -26,6 +26,8 @@ namespace paracl
 
         const Expr* expr() const { return expr_; }
 
+        void accept (IStmtVisitor& v) const override { v.visit (*this); }
+
         void exec (Context& ctx) const override
         {
             ctx.print_int (expr_->eval (ctx));
@@ -45,6 +47,8 @@ namespace paracl
         }
 
         const Expr* expr() const { return expr_; }
+
+        void accept (IStmtVisitor& v) const override { v.visit (*this); }
 
         void exec (Context& ctx) const override
         {
@@ -68,6 +72,8 @@ namespace paracl
         }
 
         const std::vector<const Stmt*>& stmts() const { return stmts_; }
+
+        void accept (IStmtVisitor& v) const override { v.visit (*this); }
 
         void exec (Context& ctx) const override
         {
@@ -99,6 +105,8 @@ namespace paracl
         const Stmt* then_branch() const { return then_; }
         const Stmt* else_branch() const { return else_; }
 
+        void accept (IStmtVisitor& v) const override { v.visit (*this); }
+
         void exec (Context& ctx) const override
         {
             if (cond_->eval (ctx) != 0)
@@ -124,6 +132,8 @@ namespace paracl
 
         const Expr* cond() const { return cond_; }
         const Stmt* body() const { return body_; }
+
+        void accept (IStmtVisitor& v) const override { v.visit (*this); }
 
         void exec (Context& ctx) const override
         {
