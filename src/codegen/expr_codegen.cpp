@@ -61,6 +61,9 @@ namespace paracl::codegen
         return slot;
     }
 
+    // -----------------------------------------------------------------------
+    // helper: lower && and || with short-circuit CFG and merge via phi
+    // -----------------------------------------------------------------------
     llvm::Value* ExprCodegen::emit_short_circuit (const BinaryExpr& node)
     {
         auto& b = cg_.builder();
