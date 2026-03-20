@@ -64,10 +64,11 @@ namespace paracl::codegen
     llvm::Value* ExprCodegen::emit_short_circuit (const BinaryExpr& node)
     {
         auto& b = cg_.builder();
-        llvm::Function* fn = cg_.current_function();
-        assert (fn && "ExprCodegen::emit_short_circuit: no active function");
-        assert ((node.op() == BinOp::And || node.op() == BinOp::Or) &&
-                "ExprCodegen::emit_short_circuit: expected && or ||");
+        llvm::BasicBlock* current_bb = b.GetInsertBlock();
+        assert (current_bb && "ExprCodegen::emit_short_circuit: no insert block");
+
+        llvm::Function* fn = current_bb->getParent();
+        assert (fn && "ExprCodegen::emit_short_circuit: no parent function");
 
         llvm::Value* lhs = emit (node.lhs());
         llvm::Value* lhs_bool = to_bool (cg_, lhs);

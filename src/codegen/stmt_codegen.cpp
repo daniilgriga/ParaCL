@@ -127,7 +127,6 @@ namespace paracl::codegen
     //   while.cond -> while.body / while.after
     //   while.body -> while.cond
     // -----------------------------------------------------------------------
-
     void StmtCodegen::visit (const WhileStmt& node)
     {
         ExprCodegen expr_cg { cg_ };
