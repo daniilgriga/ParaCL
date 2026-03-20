@@ -7,11 +7,25 @@
 #include <stdexcept>
 
 #include <llvm/IR/Value.h>
+#include <llvm/IR/Constants.h>
 
 #include "ast/stmt_nodes.hpp"
 
 namespace paracl::codegen
 {
+
+    namespace
+    {
+        llvm::Value* to_bool (CodegenContext& cg, llvm::Value* value)
+        {
+            return cg.builder().CreateICmpNE(
+                value,
+                llvm::ConstantInt::get(cg.get_i32_type(), 0),
+                "tobool"
+            );
+        }
+
+    } // namespace
 
     StmtCodegen::StmtCodegen (CodegenContext& cg)
         : cg_ (cg)
@@ -62,18 +76,91 @@ namespace paracl::codegen
     }
 
     // -----------------------------------------------------------------------
-    // IfStmt / WhileStmt: require BasicBlock branching - CFG zone
+    // IfStmt: lower structured if/else into CFG
+    //   cond -> if.then / if.else(or if.merge) -> if.merge
     // -----------------------------------------------------------------------
-    void StmtCodegen::visit (const IfStmt&)
+    void StmtCodegen::visit (const IfStmt& node)
     {
-        throw std::logic_error (
-            "StmtCodegen::visit(IfStmt): CFG lowering not implemented");
+        ExprCodegen expr_cg { cg_ };
+        llvm::Function* fn = cg_.current_function ();
+        assert (fn && "StmtCodegen::visit(IfStmt): no active function");
+
+
+        llvm::Value* cond_value = expr_cg.emit (node.cond());
+        llvm::Value* cond_bool = to_bool (cg_, cond_value);
+
+        llvm::BasicBlock* then_bb =
+            llvm::BasicBlock::Create (cg_.llvm_context(), "if.then", fn);
+        
+        llvm::BasicBlock* else_bb = nullptr;
+        if (node.else_branch())
+            else_bb = llvm::BasicBlock::Create (cg_.llvm_context(), "if.else", fn);
+
+        llvm::BasicBlock* merge_bb =
+        llvm::BasicBlock::Create (cg_.llvm_context(), "if.merge", fn);
+
+        cg_.builder().CreateCondBr (
+            cond_bool,
+            then_bb,
+            node.else_branch() ? else_bb : merge_bb
+        );
+
+        cg_.builder().SetInsertPoint (then_bb);
+        emit (node.then_branch());
+        if (!cg_.builder().GetInsertBlock()->getTerminator())
+            cg_.builder().CreateBr (merge_bb);
+
+        if (else_bb)
+        {
+            cg_.builder().SetInsertPoint (else_bb);
+            emit (node.else_branch());
+            if (!cg_.builder().GetInsertBlock()->getTerminator())
+                cg_.builder().CreateBr (merge_bb);
+        }
+
+        cg_.builder().SetInsertPoint (merge_bb);
     }
 
-    void StmtCodegen::visit (const WhileStmt&)
+    // -----------------------------------------------------------------------
+    // WhileStmt: lower loop into CFG with a condition block and back-edge
+    //   current -> while.cond
+    //   while.cond -> while.body / while.after
+    //   while.body -> while.cond
+    // -----------------------------------------------------------------------
+
+    void StmtCodegen::visit (const WhileStmt& node)
     {
-        throw std::logic_error (
-            "StmtCodegen::visit(WhileStmt): CFG lowering not implemented");
+        ExprCodegen expr_cg { cg_ };
+        llvm::Function* fn = cg_.current_function ();
+        assert (fn && "StmtCodegen::visit(WhileStmt): no active function");
+
+        llvm::BasicBlock* cond_bb =
+            llvm::BasicBlock::Create (cg_.llvm_context(), "while.cond", fn);
+
+        llvm::BasicBlock* body_bb =
+            llvm::BasicBlock::Create (cg_.llvm_context(), "while.body", fn);
+        
+        llvm::BasicBlock* after_bb =
+            llvm::BasicBlock::Create (cg_.llvm_context(), "while.after", fn);
+
+        cg_.builder().CreateBr (cond_bb);
+        cg_.builder().SetInsertPoint (cond_bb);
+
+        llvm::Value* cond_value = expr_cg.emit (node.cond());
+        llvm::Value* cond_bool = to_bool (cg_, cond_value);
+            
+        cg_.builder().CreateCondBr (
+            cond_bool,
+            body_bb,
+            after_bb
+        );
+
+        cg_.builder().SetInsertPoint (body_bb);
+        emit (node.body());
+        if (!cg_.builder().GetInsertBlock()->getTerminator())
+            cg_.builder().CreateBr (cond_bb);
+        
+        cg_.builder().SetInsertPoint (after_bb);
     }
 
 } // namespace paracl::codegen
