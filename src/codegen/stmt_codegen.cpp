@@ -7,6 +7,8 @@
 #include <stdexcept>
 
 #include <llvm/IR/Value.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/Value.h>
 
 #include "ast/stmt_nodes.hpp"
 
