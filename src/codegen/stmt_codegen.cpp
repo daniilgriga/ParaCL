@@ -97,7 +97,7 @@ namespace paracl::codegen
             else_bb = llvm::BasicBlock::Create (cg_.llvm_context(), "if.else", fn);
 
         llvm::BasicBlock* merge_bb =
-        llvm::BasicBlock::Create (cg_.llvm_context(), "if.merge", fn);
+            llvm::BasicBlock::Create (cg_.llvm_context(), "if.merge", fn);
 
         cg_.builder().CreateCondBr (
             cond_bool,
@@ -127,7 +127,6 @@ namespace paracl::codegen
     //   while.cond -> while.body / while.after
     //   while.body -> while.cond
     // -----------------------------------------------------------------------
-
     void StmtCodegen::visit (const WhileStmt& node)
     {
         ExprCodegen expr_cg { cg_ };
