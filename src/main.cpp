@@ -1,11 +1,17 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <system_error>
 
 #include "errors/errors.hpp"
 #include "interpreter/context.hpp"
 #include "syntax/driver.hpp"
 #include "syntax/lexer.hpp"
+
+#ifdef PARACL_CODEGEN
+#include "codegen/module_codegen.hpp"
+#include <llvm/Support/raw_ostream.h>
+#endif
 
 int main (int argc, char* argv[])
 {
@@ -31,8 +37,23 @@ int main (int argc, char* argv[])
     {
         driver.parse();
 
-        paracl::Context ctx (std::cin, std::cout);
-        driver.root()->exec (ctx);
+        #ifdef PARACL_INTERP
+            paracl::Context ctx (std::cin, std::cout);
+            driver.root()->exec (ctx);
+        #elif defined(PARACL_CODEGEN)
+            paracl::codegen::ModuleCodegen codegen (filename);
+            auto module = codegen.lower_program (driver.root());
+
+            std::string output_filename = filename + ".ll";
+            std::error_code ec;
+            llvm::raw_fd_ostream out (output_filename, ec);
+
+            if (ec)
+                throw std::runtime_error ("failed to open output file '" +
+                                          output_filename + "': " + ec.message());
+
+            module->print (out, nullptr);
+        #endif
     }
     catch (const paracl::ParaCLError& e)
     {
