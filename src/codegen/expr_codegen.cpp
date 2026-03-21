@@ -79,25 +79,23 @@ namespace paracl::codegen
             b.CreateCondBr (lhs_bool, rhs_bb, short_bb);
 
         b.SetInsertPoint (short_bb);
-        llvm::Value* short_value =
-            llvm::ConstantInt::get (cg_.get_i32_type(), short_result);
+        llvm::Value* short_bool =
+            llvm::ConstantInt::get (llvm::Type::getInt1Ty (cg_.llvm_context()), short_result);
         b.CreateBr (merge_bb);
         short_bb = b.GetInsertBlock();
 
         b.SetInsertPoint (rhs_bb);
         llvm::Value* rhs = emit (node.rhs());
         llvm::Value* rhs_bool = cg_.to_bool (rhs);
-        llvm::Value* rhs_i32 =
-            b.CreateZExt (rhs_bool, cg_.get_i32_type(), prefix + ".rhs.i32");
         b.CreateBr (merge_bb);
         rhs_bb = b.GetInsertBlock();
 
         b.SetInsertPoint (merge_bb);
-        llvm::PHINode* phi = b.CreatePHI (cg_.get_i32_type(), 2, prefix);
-        phi->addIncoming (short_value, short_bb);
-        phi->addIncoming (rhs_i32, rhs_bb);
+        llvm::PHINode* phi_bool = b.CreatePHI (llvm::Type::getInt1Ty (cg_.llvm_context()), 2, prefix + ".bool");
+        phi_bool->addIncoming (short_bool, short_bb);
+        phi_bool->addIncoming (rhs_bool, rhs_bb);
 
-        return phi;
+        return b.CreateZExt (phi_bool, cg_.get_i32_type(), prefix);
     }
 
     // -----------------------------------------------------------------------

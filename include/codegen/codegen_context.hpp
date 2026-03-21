@@ -70,8 +70,6 @@ namespace paracl::codegen
             std::span<llvm::Type* const> param_types);
 
         llvm::Value* to_bool (llvm::Value* value);
-
-        llvm::Value* to_i32_bool (llvm::Value* value);
     };
 
 } // namespace paracl::codegen

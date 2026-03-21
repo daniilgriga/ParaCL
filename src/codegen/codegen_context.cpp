@@ -73,10 +73,5 @@ namespace paracl::codegen
             "tobool");
     }
 
-    llvm::Value* CodegenContext::to_i32_bool (llvm::Value* value)
-    {
-        llvm::Value* i1 = to_bool (value);
-        return builder_->CreateZExt (i1, get_i32_type(), "i32bool");
-    }
 
 } // namespace paracl::codegen
