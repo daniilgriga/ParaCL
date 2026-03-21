@@ -17,6 +17,7 @@
 #error "Define either PARACL_INTERP or PARACL_CODEGEN at compile time"
 #endif
 
+#ifdef PARACL_CODEGEN
 namespace
 {
 
@@ -34,6 +35,7 @@ namespace
         return path + new_ext;
     }
 } // namespace
+#endif
 
 int main (int argc, char* argv[])
 {
