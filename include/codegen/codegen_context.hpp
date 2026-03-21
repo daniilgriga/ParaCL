@@ -68,7 +68,8 @@ namespace paracl::codegen
             const std::string& name,
             llvm::Type* return_type,
             std::span<llvm::Type* const> param_types);
-            // param_types like a representation of a continuous memory segment
+
+        llvm::Value* to_bool (llvm::Value* value);
     };
 
 } // namespace paracl::codegen

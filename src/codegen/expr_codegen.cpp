@@ -15,19 +15,6 @@
 namespace paracl::codegen
 {
 
-    namespace
-    {
-        llvm::Value* to_bool (CodegenContext& cg, llvm::Value* value)
-        {
-            return cg.builder().CreateICmpNE(
-                value,
-                llvm::ConstantInt::get(cg.get_i32_type(), 0),
-                "tobool"
-            );
-        }
-
-    } // namespace
-
     ExprCodegen::ExprCodegen (CodegenContext& cg)
         : cg_ (cg)
     {
@@ -45,7 +32,7 @@ namespace paracl::codegen
     }
 
     // -----------------------------------------------------------------------
-    // helper: get-or-create the alloca slot for a named variable.
+    // helper: get-or-create the alloca slot for a named variable
     // -----------------------------------------------------------------------
     llvm::AllocaInst* ExprCodegen::get_or_create_slot (const std::string& name)
     {
@@ -74,7 +61,7 @@ namespace paracl::codegen
         assert (fn && "ExprCodegen::emit_short_circuit: no parent function");
 
         llvm::Value* lhs = emit (node.lhs());
-        llvm::Value* lhs_bool = to_bool (cg_, lhs);
+        llvm::Value* lhs_bool = cg_.to_bool (lhs);
 
         const std::string prefix = (node.op() == BinOp::Or) ? "or" : "and";
         const int short_result = (node.op() == BinOp::Or) ? 1 : 0;
@@ -92,25 +79,23 @@ namespace paracl::codegen
             b.CreateCondBr (lhs_bool, rhs_bb, short_bb);
 
         b.SetInsertPoint (short_bb);
-        llvm::Value* short_value =
-            llvm::ConstantInt::get (cg_.get_i32_type(), short_result);
+        llvm::Value* short_bool =
+            llvm::ConstantInt::get (llvm::Type::getInt1Ty (cg_.llvm_context()), short_result);
         b.CreateBr (merge_bb);
         short_bb = b.GetInsertBlock();
 
         b.SetInsertPoint (rhs_bb);
         llvm::Value* rhs = emit (node.rhs());
-        llvm::Value* rhs_bool = to_bool (cg_, rhs);
-        llvm::Value* rhs_i32 =
-            b.CreateZExt (rhs_bool, cg_.get_i32_type(), prefix + ".rhs.i32");
+        llvm::Value* rhs_bool = cg_.to_bool (rhs);
         b.CreateBr (merge_bb);
         rhs_bb = b.GetInsertBlock();
 
         b.SetInsertPoint (merge_bb);
-        llvm::PHINode* phi = b.CreatePHI (cg_.get_i32_type(), 2, prefix);
-        phi->addIncoming (short_value, short_bb);
-        phi->addIncoming (rhs_i32, rhs_bb);
+        llvm::PHINode* phi_bool = b.CreatePHI (llvm::Type::getInt1Ty (cg_.llvm_context()), 2, prefix + ".bool");
+        phi_bool->addIncoming (short_bool, short_bb);
+        phi_bool->addIncoming (rhs_bool, rhs_bb);
 
-        return phi;
+        return b.CreateZExt (phi_bool, cg_.get_i32_type(), prefix);
     }
 
     // -----------------------------------------------------------------------
