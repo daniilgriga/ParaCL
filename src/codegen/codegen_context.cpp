@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
 
@@ -62,6 +63,20 @@ namespace paracl::codegen
 
         fn->setLinkage (llvm::Function::ExternalLinkage);
         return fn;
+    }
+
+    llvm::Value* CodegenContext::to_bool (llvm::Value* value)
+    {
+        return builder_->CreateICmpNE (
+            value,
+            llvm::ConstantInt::get (get_i32_type(), 0),
+            "tobool");
+    }
+
+    llvm::Value* CodegenContext::to_i32_bool (llvm::Value* value)
+    {
+        llvm::Value* i1 = to_bool (value);
+        return builder_->CreateZExt (i1, get_i32_type(), "i32bool");
     }
 
 } // namespace paracl::codegen

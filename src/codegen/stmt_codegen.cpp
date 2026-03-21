@@ -7,25 +7,11 @@
 #include <stdexcept>
 
 #include <llvm/IR/Value.h>
-#include <llvm/IR/Constants.h>
 
 #include "ast/stmt_nodes.hpp"
 
 namespace paracl::codegen
 {
-
-    namespace
-    {
-        llvm::Value* to_bool (CodegenContext& cg, llvm::Value* value)
-        {
-            return cg.builder().CreateICmpNE(
-                value,
-                llvm::ConstantInt::get(cg.get_i32_type(), 0),
-                "tobool"
-            );
-        }
-
-    } // namespace
 
     StmtCodegen::StmtCodegen (CodegenContext& cg)
         : cg_ (cg)
@@ -82,16 +68,15 @@ namespace paracl::codegen
     void StmtCodegen::visit (const IfStmt& node)
     {
         ExprCodegen expr_cg { cg_ };
-        llvm::Function* fn = cg_.current_function ();
+        llvm::Function* fn = cg_.current_function();
         assert (fn && "StmtCodegen::visit(IfStmt): no active function");
 
-
         llvm::Value* cond_value = expr_cg.emit (node.cond());
-        llvm::Value* cond_bool = to_bool (cg_, cond_value);
+        llvm::Value* cond_bool = cg_.to_bool (cond_value);
 
         llvm::BasicBlock* then_bb =
             llvm::BasicBlock::Create (cg_.llvm_context(), "if.then", fn);
-        
+
         llvm::BasicBlock* else_bb = nullptr;
         if (node.else_branch())
             else_bb = llvm::BasicBlock::Create (cg_.llvm_context(), "if.else", fn);
@@ -138,7 +123,7 @@ namespace paracl::codegen
 
         llvm::BasicBlock* body_bb =
             llvm::BasicBlock::Create (cg_.llvm_context(), "while.body", fn);
-        
+
         llvm::BasicBlock* after_bb =
             llvm::BasicBlock::Create (cg_.llvm_context(), "while.after", fn);
 
@@ -146,8 +131,8 @@ namespace paracl::codegen
         cg_.builder().SetInsertPoint (cond_bb);
 
         llvm::Value* cond_value = expr_cg.emit (node.cond());
-        llvm::Value* cond_bool = to_bool (cg_, cond_value);
-            
+        llvm::Value* cond_bool = cg_.to_bool (cond_value);
+
         cg_.builder().CreateCondBr (
             cond_bool,
             body_bb,
@@ -158,7 +143,7 @@ namespace paracl::codegen
         emit (node.body());
         if (!cg_.builder().GetInsertBlock()->getTerminator())
             cg_.builder().CreateBr (cond_bb);
-        
+
         cg_.builder().SetInsertPoint (after_bb);
     }
 
