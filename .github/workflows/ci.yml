@@ -55,7 +55,7 @@ jobs:
         run: ./tests/e2e/run_e2e.sh ./build/ubuntu/paracli
 
   build-ubuntu-sanitizers:
-    name: Ubuntu (GCC + Sanitizers)
+    name: Ubuntu (GCC Debug + Sanitizers)
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: [self-hosted, Linux, X64, light]
     needs: build-ubuntu
@@ -114,7 +114,7 @@ jobs:
         run: ./tests/e2e/run_e2e.sh ./build/release/paracli
 
   build-ubuntu-codegen:
-    name: Ubuntu (LLVM Codegen E2E)
+    name: Ubuntu (GCC Codegen E2E)
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: [self-hosted, Linux, X64, light]
     needs: build-ubuntu-release
@@ -150,7 +150,7 @@ jobs:
         run: bash ./tests/e2e/run_codegen_e2e.sh ./build/codegen/paracl
 
   build-macos:
-    name: macOS (Clang)
+    name: macOS (Clang Debug)
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: macos-latest
     needs: build-ubuntu-release
@@ -182,7 +182,7 @@ jobs:
         run: ./tests/e2e/run_e2e.sh ./build/macos/paracli
 
   build-macos-codegen:
-    name: macOS (LLVM Codegen E2E)
+    name: macOS (Clang Codegen E2E)
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: macos-latest
     needs: build-macos
