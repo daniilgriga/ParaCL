@@ -113,6 +113,42 @@ jobs:
       - name: E2E tests
         run: ./tests/e2e/run_e2e.sh ./build/release/paracli
 
+  build-ubuntu-codegen:
+    name: Ubuntu (LLVM Codegen E2E)
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: [self-hosted, Linux, X64, light]
+    needs: build-ubuntu-release
+    timeout-minutes: 40
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show compiler toolchain
+        run: |
+          whoami
+          hostname
+          uname -a
+          cmake --version
+          ninja --version
+          clang++ --version
+          llvm-config --version
+
+      - name: Configure compiler build
+        run: >
+          cmake -S . -B build/codegen
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_COMPILER=ON
+          -DBUILD_TESTS=OFF
+
+      - name: Build compiler target
+        run: cmake --build build/codegen --target ParaCL -- -j1
+
+      - name: Compiler E2E tests
+        run: bash ./tests/e2e/run_codegen_e2e.sh ./build/codegen/paracl
+
   build-macos:
     name: macOS (Clang)
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
@@ -144,3 +180,43 @@ jobs:
 
       - name: E2E tests
         run: ./tests/e2e/run_e2e.sh ./build/macos/paracli
+
+  build-macos-codegen:
+    name: macOS (LLVM Codegen E2E)
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: macos-latest
+    needs: build-macos
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake ninja googletest bison flex llvm
+
+      - name: Prefer Homebrew tools in PATH
+        run: |
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+          echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+
+      - name: Show compiler toolchain
+        run: |
+          clang++ --version
+          llvm-config --version
+          cmake --version
+          ninja --version
+
+      - name: Configure compiler build
+        run: >
+          cmake -S . -B build/macos-codegen
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_COMPILER=ON
+          -DBUILD_TESTS=OFF
+          -DLLVM_DIR=$(brew --prefix llvm)/lib/cmake/llvm
+
+      - name: Build compiler target
+        run: cmake --build build/macos-codegen --target ParaCL
+
+      - name: Compiler E2E tests
+        run: bash ./tests/e2e/run_codegen_e2e.sh ./build/macos-codegen/paracl
